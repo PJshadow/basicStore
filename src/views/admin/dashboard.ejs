@@ -1,0 +1,353 @@
+<% layout('layouts/main') -%>
+
+<% 
+block('title', 'Admin Dashboard');
+const sidebar = true;
+const activePage = 'dashboard';
+-%>
+
+<% block('styles', `
+    <style>
+        .stat-card {
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .recent-orders-table {
+            font-size: 0.9rem;
+        }
+        .order-status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+    </style>
+`) -%>
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+    </h1>
+    <div class="btn-group">
+        <button class="btn btn-outline-primary">
+            <i class="fas fa-download me-2"></i> Export Report
+        </button>
+        <button class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Add Product
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Revenue
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">$24,580</div>
+                        <div class="mt-2 mb-0 text-muted text-xs">
+                            <span class="text-success mr-2">
+                                <i class="fas fa-arrow-up"></i> 12.5%
+                            </span>
+                            <span>Since last month</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign stat-icon text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Total Orders
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">1,248</div>
+                        <div class="mt-2 mb-0 text-muted text-xs">
+                            <span class="text-success mr-2">
+                                <i class="fas fa-arrow-up"></i> 8.3%
+                            </span>
+                            <span>Since last month</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart stat-icon text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Total Customers
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">892</div>
+                        <div class="mt-2 mb-0 text-muted text-xs">
+                            <span class="text-success mr-2">
+                                <i class="fas fa-arrow-up"></i> 5.2%
+                            </span>
+                            <span>Since last month</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users stat-icon text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Low Stock Items
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                        <div class="mt-2 mb-0 text-muted text-xs">
+                            <span class="text-danger mr-2">
+                                <i class="fas fa-arrow-down"></i> 3.1%
+                            </span>
+                            <span>Since last month</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle stat-icon text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Recent Orders -->
+<div class="row">
+    <!-- Revenue Chart -->
+    <div class="col-xl-8 col-lg-7 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Revenue Overview</h6>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Last 30 Days
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                        <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                        <li><a class="dropdown-item" href="#">Last 90 Days</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <!-- Chart placeholder -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Revenue chart will be displayed here</p>
+                        <p class="small">Integration with Chart.js or similar library required</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-xl-4 col-lg-5 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+            </div>
+            <div class="card-body">
+                <div class="activity-feed">
+                    <div class="activity-item d-flex mb-3">
+                        <div class="activity-icon bg-primary text-white rounded-circle p-2 me-3">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">New Order #ORD-1001</h6>
+                            <p class="text-muted mb-0">John Doe placed a new order</p>
+                            <small class="text-muted">10 minutes ago</small>
+                        </div>
+                    </div>
+                    <div class="activity-item d-flex mb-3">
+                        <div class="activity-icon bg-success text-white rounded-circle p-2 me-3">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">New Customer Registered</h6>
+                            <p class="text-muted mb-0">Jane Smith created an account</p>
+                            <small class="text-muted">45 minutes ago</small>
+                        </div>
+                    </div>
+                    <div class="activity-item d-flex mb-3">
+                        <div class="activity-icon bg-warning text-white rounded-circle p-2 me-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Low Stock Alert</h6>
+                            <p class="text-muted mb-0">Wireless Headphones stock below threshold</p>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                    </div>
+                    <div class="activity-item d-flex mb-3">
+                        <div class="activity-icon bg-info text-white rounded-circle p-2 me-3">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">New Coupon Created</h6>
+                            <p class="text-muted mb-0">"SUMMER25" coupon added</p>
+                            <small class="text-muted">5 hours ago</small>
+                        </div>
+                    </div>
+                    <div class="activity-item d-flex">
+                        <div class="activity-icon bg-danger text-white rounded-circle p-2 me-3">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Order Shipped</h6>
+                            <p class="text-muted mb-0">Order #ORD-0998 has been shipped</p>
+                            <small class="text-muted">Yesterday</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders Table -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+                <a href="/admin/orders" class="btn btn-sm btn-outline-primary">View All Orders</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover recent-orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#ORD-1001</td>
+                                <td>John Doe</td>
+                                <td>Mar 16, 2026</td>
+                                <td>$249.99</td>
+                                <td>
+                                    <span class="order-status-badge badge bg-warning">Processing</span>
+                                </td>
+                                <td>
+                                    <a href="/admin/orders/1001" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-1000</td>
+                                <td>Jane Smith</td>
+                                <td>Mar 15, 2026</td>
+                                <td>$129.99</td>
+                                <td>
+                                    <span class="order-status-badge badge bg-success">Shipped</span>
+                                </td>
+                                <td>
+                                    <a href="/admin/orders/1000" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-0999</td>
+                                <td>Robert Johnson</td>
+                                <td>Mar 14, 2026</td>
+                                <td>$89.99</td>
+                                <td>
+                                    <span class="order-status-badge badge bg-primary">Delivered</span>
+                                </td>
+                                <td>
+                                    <a href="/admin/orders/0999" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-0998</td>
+                                <td>Sarah Williams</td>
+                                <td>Mar 13, 2026</td>
+                                <td>$199.99</td>
+                                <td>
+                                    <span class="order-status-badge badge bg-info">Pending</span>
+                                </td>
+                                <td>
+                                    <a href="/admin/orders/0998" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-0997</td>
+                                <td>Michael Brown</td>
+                                <td>Mar 12, 2026</td>
+                                <td>$59.99</td>
+                                <td>
+                                    <span class="order-status-badge badge bg-danger">Cancelled</span>
+                                </td>
+                                <td>
+                                    <a href="/admin/orders/0997" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% block('scripts', `
+    <script>
+        // Dashboard initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Admin dashboard loaded');
+            // Initialize charts here
+        });
+    </script>
+`) -%>

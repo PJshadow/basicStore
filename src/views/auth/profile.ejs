@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - BasicStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+    <%- include('../partials/navbar') %>
+    
+    <div class="container mt-4">
+        <%- include('../partials/messages') %>
+        
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 100px; height: 100px;">
+                                <i class="bi bi-person text-white" style="font-size: 3rem;"></i>
+                            </div>
+                        </div>
+                        <h5 class="card-title"><%= currentUser.username %></h5>
+                        <p class="card-text text-muted"><%= currentUser.email %></p>
+                        <p class="card-text">
+                            <span class="badge bg-<%= currentUser.role === 'admin' ? 'danger' : 'success' %>">
+                                <%= currentUser.role === 'admin' ? 'Administrator' : 'Customer' %>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/auth/profile" class="list-group-item list-group-item-action active">
+                            <i class="bi bi-person me-2"></i> Profile Overview
+                        </a>
+                        <a href="/orders" class="list-group-item list-group-item-action">
+                            <i class="bi bi-bag me-2"></i> My Orders
+                        </a>
+                        <a href="/addresses" class="list-group-item list-group-item-action">
+                            <i class="bi bi-geo-alt me-2"></i> Address Book
+                        </a>
+                        <a href="/wishlist" class="list-group-item list-group-item-action">
+                            <i class="bi bi-heart me-2"></i> Wish List
+                        </a>
+                        <% if (currentUser.role === 'admin') { %>
+                            <a href="/admin" class="list-group-item list-group-item-action text-danger">
+                                <i class="bi bi-speedometer2 me-2"></i> Admin Dashboard
+                            </a>
+                        <% } %>
+                        <form action="/auth/logout" method="POST" class="list-group-item">
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0">My Profile</h1>
+                    <div class="text-muted">
+                        Member since: <%- new Date().toLocaleDateString() %>
+                    </div>
+                </div>
+                
+                <!-- Profile Tabs -->
+                <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
+                            <i class="bi bi-person me-1"></i> Overview
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button">
+                            <i class="bi bi-pencil me-1"></i> Edit Profile
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button">
+                            <i class="bi bi-lock me-1"></i> Change Password
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button">
+                            <i class="bi bi-bag me-1"></i> Recent Orders
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="profileTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Personal Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-4">Username</dt>
+                                            <dd class="col-sm-8"><%= currentUser.username %></dd>
+                                            
+                                            <dt class="col-sm-4">Email</dt>
+                                            <dd class="col-sm-8"><%= currentUser.email %></dd>
+                                            
+                                            <dt class="col-sm-4">Account Type</dt>
+                                            <dd class="col-sm-8">
+                                                <span class="badge bg-<%= currentUser.role === 'admin' ? 'danger' : 'success' %>">
+                                                    <%= currentUser.role === 'admin' ? 'Administrator' : 'Customer' %>
+                                                </span>
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">Member Since</dt>
+                                            <dd class="col-sm-8"><%- new Date().toLocaleDateString() %></dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Account Statistics</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-6 mb-3">
+                                                <div class="display-6 text-primary">0</div>
+                                                <small class="text-muted">Total Orders</small>
+                                            </div>
+                                            <div class="col-6 mb-3">
+                                                <div class="display-6 text-success">$0.00</div>
+                                                <small class="text-muted">Total Spent</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="display-6 text-warning">0</div>
+                                                <small class="text-muted">Wish List Items</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="display-6 text-info">0</div>
+                                                <small class="text-muted">Reviews</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Activity -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Recent Activity</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center py-4">
+                                    <i class="bi bi-clock-history display-1 text-muted"></i>
+                                    <h5 class="mt-3">No recent activity</h5>
+                                    <p class="text-muted">Your recent orders and activities will appear here.</p>
+                                    <a href="/products" class="btn btn-primary">Start Shopping</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Profile Tab -->
+                    <div class="tab-pane fade" id="edit" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Edit Profile Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <form action="/auth/profile/update" method="POST">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="editUsername" class="form-label">Username</label>
+                                            <input type="text" class="form-control" id="editUsername" 
+                                                   name="username" value="<%= currentUser.username %>" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="editEmail" class="form-label">Email Address</label>
+                                            <input type="email" class="form-control" id="editEmail" 
+                                                   name="email" value="<%= currentUser.email %>" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="editFirstName" class="form-label">First Name</label>
+                                            <input type="text" class="form-control" id="editFirstName" name="firstName">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="editLastName" class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" id="editLastName" name="lastName">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="editPhone" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="editPhone" name="phone">
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="editBio" class="form-label">Bio/Description</label>
+                                            <textarea class="form-control" id="editBio" name="bio" rows="3"></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-check-circle"></i> Update Profile
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Change Password Tab -->
+                    <div class="tab-pane fade" id="password" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Change Password</h6>
+                            </div>
+                            <div class="card-body">
+                                <form action="/auth/profile/change-password" method="POST">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label for="currentPassword" class="form-label">Current Password</label>
+                                            <input type="password" class="form-control" id="currentPassword" 
+                                                   name="currentPassword" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="newPassword" class="form-label">New Password</label>
+                                            <input type="password" class="form-control" id="newPassword" 
+                                                   name="newPassword" required minlength="6">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                            <input type="password" class="form-control" id="confirmNewPassword" 
+                                                   name="confirmNewPassword" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-text">
+                                                <i class="bi bi-info-circle"></i> Password must be at least 6 characters long
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-key"></i> Change Password
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Orders Tab -->
+                    <div class="tab-pane fade" id="orders" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Recent Orders</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center py-5">
+                                    <i class="bi bi-bag display-1 text-muted"></i>
+                                    <h5 class="mt-3">No orders yet</h5>
+                                    <p class="text-muted">You haven't placed any orders yet.</p>
+                                    <a href="/products" class="btn btn-primary">Browse Products</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <%- include('../partials/footer') %>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

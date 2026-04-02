@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .customer-card {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .customer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .customer-card.vip { border-left-color: #ffc107; }
+        .customer-card.new { border-left-color: #0dcaf0; }
+        .customer-card.inactive { border-left-color: #6c757d; }
+        
+        .customer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #495057;
+        }
+        .customer-avatar.vip { background-color: #fff3cd; color: #856404; }
+        .customer-avatar.new { background-color: #d1ecf1; color: #0c5460; }
+        
+        .stats-card {
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: white;
+        }
+        .stats-total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stats-active { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stats-new { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stats-vip { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        
+        .badge-vip {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .badge-new {
+            background-color: #0dcaf0;
+            color: #000;
+        }
+        
+        .activity-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .activity-active { background-color: #28a745; }
+        .activity-inactive { background-color: #dc3545; }
+        .activity-idle { background-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <%- include('../layouts/main') %>
+
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('../partials/sidebar') %>
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Customer Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/admin/customers/create" class="btn btn-sm btn-primary me-2">
+                            <i class="bi bi-plus-circle"></i> Add Customer
+                        </a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportCustomers()">
+                                <i class="bi bi-download"></i> Export
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="printCustomers()">
+                                <i class="bi bi-printer"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card stats-total">
+                            <h6 class="text-uppercase">Total Customers</h6>
+                            <h3><%= stats.totalCustomers || 0 %></h3>
+                            <small>This month: +<%= stats.newThisMonth || 0 %></small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card stats-active">
+                            <h6 class="text-uppercase">Active Customers</h6>
+                            <h3><%= stats.activeCustomers || 0 %></h3>
+                            <small><%= stats.activePercentage ? stats.activePercentage.toFixed(1) : '0' %>% of total</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card stats-new">
+                            <h6 class="text-uppercase">New Customers</h6>
+                            <h3><%= stats.newCustomers || 0 %></h3>
+                            <small>Last 30 days</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card stats-vip">
+                            <h6 class="text-uppercase">VIP Customers</h6>
+                            <h3><%= stats.vipCustomers || 0 %></h3>
+                            <small>Top <%= stats.vipPercentage ? stats.vipPercentage.toFixed(1) : '0' %>%</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form id="filterForm" method="GET" action="/admin/customers">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="">All Statuses</option>
+                                        <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+                                        <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                        <option value="new" <%= filters.status === 'new' ? 'selected' : '' %>>New (Last 30 days)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="type" class="form-label">Customer Type</label>
+                                    <select class="form-select" id="type" name="type">
+                                        <option value="">All Types</option>
+                                        <option value="regular" <%= filters.type === 'regular' ? 'selected' : '' %>>Regular</option>
+                                        <option value="vip" <%= filters.type === 'vip' ? 'selected' : '' %>>VIP</option>
+                                        <option value="wholesale" <%= filters.type === 'wholesale' ? 'selected' : '' %>>Wholesale</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="dateFrom" class="form-label">Joined From</label>
+                                    <input type="date" class="form-control" id="dateFrom" name="dateFrom" value="<%= filters.dateFrom || '' %>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="dateTo" class="form-label">Joined To</label>
+                                    <input type="date" class="form-control" id="dateTo" name="dateTo" value="<%= filters.dateTo || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="search" class="form-label">Search</label>
+                                    <input type="text" class="form-control" id="search" name="search" value="<%= filters.search || '' %>" placeholder="Name, Email, Phone, City...">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="minOrders" class="form-label">Min Orders</label>
+                                    <input type="number" class="form-control" id="minOrders" name="minOrders" value="<%= filters.minOrders || '' %>" placeholder="0" min="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="minSpent" class="form-label">Min Spent</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="minSpent" name="minSpent" value="<%= filters.minSpent || '' %>" placeholder="0.00" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-12 d-flex justify-content-end">
+                                    <div class="btn-group">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-filter"></i> Apply Filters
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                                            <i class="bi bi-x-circle"></i> Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Customers Table -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
+                                        </th>
+                                        <th>Customer</th>
+                                        <th>Contact</th>
+                                        <th>Location</th>
+                                        <th>Orders</th>
+                                        <th>Total Spent</th>
+                                        <th>Status</th>
+                                        <th>Last Active</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (customers && customers.length > 0) { %>
+                                        <% customers.forEach(customer => { %>
+                                            <tr class="customer-card <%= customer.type === 'vip' ? 'vip' : customer.isNew ? 'new' : customer.status === 'inactive' ? 'inactive' : '' %>">
+                                                <td>
+                                                    <input type="checkbox" class="customer-checkbox" value="<%= customer.id %>">
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="customer-avatar <%= customer.type === 'vip' ? 'vip' : customer.isNew ? 'new' : '' %> me-3">
+                                                            <%= customer.initials %>
+                                                        </div>
+                                                        <div>
+                                                            <strong><%= customer.fullName %></strong>
+                                                            <div class="text-muted">
+                                                                ID: <%= customer.customerId || customer.id %>
+                                                                <% if (customer.type === 'vip') { %>
+                                                                    <span class="badge badge-vip ms-2">VIP</span>
+                                                                <% } %>
+                                                                <% if (customer.isNew) { %>
+                                                                    <span class="badge badge-new ms-2">New</span>
+                                                                <% } %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div><%= customer.email %></div>
+                                                    <small class="text-muted"><%= customer.phone || 'No phone' %></small>
+                                                </td>
+                                                <td>
+                                                    <div><%= customer.city || 'N/A' %></div>
+                                                    <small class="text-muted"><%= customer.country || '' %></small>
+                                                </td>
+                                                <td>
+                                                    <strong><%= customer.totalOrders || 0 %></strong>
+                                                    <div class="text-muted">
+                                                        <small>Last: <%= customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString() : 'Never' %></small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <strong>$<%= customer.totalSpent ? customer.totalSpent.toFixed(2) : '0.00' %></strong>
+                                                    <div class="text-muted">
+                                                        <small>Avg: $<%= customer.averageOrderValue ? customer.averageOrderValue.toFixed(2) : '0.00' %></small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="activity-indicator activity-<%= customer.activityStatus || 'inactive' %>"></span>
+                                                    <span class="text-capitalize"><%= customer.status %></span>
+                                                    <% if (customer.isVerified) { %>
+                                                        <i class="bi bi-check-circle-fill text-success" title="Verified"></i>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <% if (customer.lastActive) { %>
+                                                        <%= new Date(customer.lastActive).toLocaleDateString() %>
+                                                        <div class="text-muted">
+                                                            <small><%= new Date(customer.lastActive).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></small>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">Never</span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="/admin/customers/<%= customer.id %>" class="btn btn-outline-primary" title="View Details">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        <a href="/admin/customers/<%= customer.id %>/edit" class="btn btn-outline-secondary" title="Edit Customer">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                        <a href="mailto:<%= customer.email %>" class="btn btn-outline-info" title="Send Email">
+                                                            <i class="bi bi-envelope"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline-danger" onclick="showDeleteModal('<%= customer.id %>', '<%= customer.fullName %>')" title="Delete Customer">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="9" class="text-center py-4">
+                                                <div class="text-muted">
+                                                    <i class="bi bi-people" style="font-size: 3rem;"></i>
+                                                    <h5 class="mt-3">No customers found</h5>
+                                                    <p>Try adjusting your filters or check back later.</p>
+                                                    <a href="/admin/customers/create" class="btn btn-primary mt-2">
+                                                        <i class="bi bi-plus-circle"></i> Add First Customer
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <select class="form-select form-select-sm d-inline-block w-auto" id="bulkAction">
+                                    <option value="">Bulk Actions</option>
+                                    <option value="send_email">Send Email</option>
+                                    <option value="export_selected">Export Selected</option>
+                                    <option value="mark_vip">Mark as VIP</option>
+                                    <option value="mark_regular">Mark as Regular</option>
+                                    <option value="activate">Activate Accounts</option>
+                                    <option value="deactivate">Deactivate Accounts</option>
+                                    <option value="delete">Delete Selected</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-primary ms-2" onclick="applyBulkAction()">Apply</button>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <% if (pagination && pagination.totalPages > 1) { %>
+                                <nav>
+                                    <ul class="pagination mb-0">
+                                        <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
+                                            <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&<%= queryString %>">Previous</a>
+                                        </li>
+                                        
+                                        <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                                            <% if (i === 1 || i === pagination.totalPages || (i >= pagination.currentPage - 2 && i <= pagination.currentPage + 2)) { %>
+                                                <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                                                    <a class="page-link" href="?page=<%= i %>&<%= queryString %>"><%= i %></a>
+                                                </li>
+                                            <% } else if (i === pagination.currentPage - 3 || i === pagination.currentPage + 3) { %>
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                            <% } %>
+                                        <% } %>
+                                        
+                                        <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
+                                            <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&<%= queryString %>">Next</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteCustomerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete customer <strong id="deleteCustomerName"></strong>?</p>
+                    <p class="text-danger"><small>This action cannot be undone. All customer data, orders, and history will be permanently deleted.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteCustomerForm" method="POST" style="display: inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn btn-danger">Delete Customer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle select all checkboxes
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.customer-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        // Show delete modal
+        function showDeleteModal(customerId, customerName) {
+            document.getElementById('deleteCustomerName').textContent = customerName;
+            document.getElementById('deleteCustomerForm').action = `/admin/customers/${customerId}`;
+            const modal = new bootstrap.Modal(document.getElementById('deleteCustomerModal'));
+            modal.show();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('filterForm').reset();
+            document.getElementById('filterForm').submit();
+        }
+
+        // Apply bulk action
+        function applyBulkAction() {
+            const action = document.getElementById('bulkAction').value;
+            const selectedCustomers = Array.from(document.querySelectorAll('.customer-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            
+            if (selectedCustomers.length === 0) {
+                alert('Please select at least one customer.');
+                return;
+            }
+            
+            if (!action) {
+                alert('Please select a bulk action.');
+                return;
+            }
+            
+            if (action === 'delete') {
+                if (!confirm(`Are you sure you want to delete ${selectedCustomers.length} customer(s)? This action cannot be undone.`)) {
+                    return;
+                }
+            }
+            
+            // In a real application, you would submit this to the server
+            alert(`Applying "${action}" to ${selectedCustomers.length} customer(s). This would be processed on the server.`);
+            
+            // Example of how to submit via fetch:
+            /*
+            fetch('/admin/customers/bulk-action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    customerIds: selectedCustomers
+                })
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+            */
+        }
+
+        // Export customers
+        function exportCustomers() {
+            const filters = {
+                status: document.getElementById('status').value,
+                type: document.getElementById('type').value,
+                dateFrom: document.getElementById('dateFrom').value,
+                dateTo: document.getElementById('dateTo').value,
+                search: document.getElementById('search').value
+            };
+            
+            const queryString = new URLSearchParams(filters).toString();
+            window.open(`/admin/customers/export?${queryString}`, '_blank');
+        }
+
+        // Print customers
+        function printCustomers() {
+            window.print();
+        }
+
+        // Auto-submit when certain filters change
+        document.getElementById('status').addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+        
+        document.getElementById('type').addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | <%= appName %></title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 50px;
+        }
+        .product-card {
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .category-card {
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navigation -->
+    <%- include('../partials/header') %>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/messages') %>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">Welcome to <%= appName %></h1>
+            <p class="lead mb-4">Discover amazing products at unbeatable prices. Quality you can trust, service you'll love.</p>
+            <a href="/products" class="btn btn-primary btn-lg px-5">
+                <i class="fas fa-shopping-bag me-2"></i> Shop Now
+            </a>
+        </div>
+    </section>
+
+<!-- Featured Categories -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Shop by Category</h2>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card category-card">
+                    <img src="https://via.placeholder.com/300x200/0d6efd/ffffff?text=Electronics" class="card-img-top" alt="Electronics">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Electronics</h5>
+                        <p class="card-text">Latest gadgets and devices</p>
+                        <a href="/products?category=electronics" class="btn btn-outline-primary">Browse</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card category-card">
+                    <img src="https://via.placeholder.com/300x200/198754/ffffff?text=Fashion" class="card-img-top" alt="Fashion">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Fashion</h5>
+                        <p class="card-text">Trendy clothing & accessories</p>
+                        <a href="/products?category=fashion" class="btn btn-outline-primary">Browse</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card category-card">
+                    <img src="https://via.placeholder.com/300x200/f0ad4e/ffffff?text=Home+%26+Garden" class="card-img-top" alt="Home & Garden">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Home & Garden</h5>
+                        <p class="card-text">Everything for your home</p>
+                        <a href="/products?category=home" class="btn btn-outline-primary">Browse</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card category-card">
+                    <img src="https://via.placeholder.com/300x200/d9534f/ffffff?text=Sports" class="card-img-top" alt="Sports">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Sports</h5>
+                        <p class="card-text">Fitness equipment & gear</p>
+                        <a href="/products?category=sports" class="btn btn-outline-primary">Browse</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h2>Featured Products</h2>
+            <a href="/products" class="btn btn-link">View All Products <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="row">
+            <!-- Product 1 -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card product-card">
+                    <img src="https://via.placeholder.com/300x300/6c757d/ffffff?text=Product+1" class="card-img-top" alt="Product 1">
+                    <div class="card-body">
+                        <h5 class="card-title">Wireless Headphones</h5>
+                        <p class="card-text text-muted">Premium sound quality with noise cancellation</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-primary">$99.99</span>
+                            <span class="text-danger"><s>$129.99</s></span>
+                        </div>
+                        <a href="/products/wireless-headphones" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 2 -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card product-card">
+                    <img src="https://via.placeholder.com/300x300/0dcaf0/ffffff?text=Product+2" class="card-img-top" alt="Product 2">
+                    <div class="card-body">
+                        <h5 class="card-title">Smart Watch</h5>
+                        <p class="card-text text-muted">Track fitness, receive notifications</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-primary">$199.99</span>
+                            <span class="badge bg-success">In Stock</span>
+                        </div>
+                        <a href="/products/smart-watch" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 3 -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card product-card">
+                    <img src="https://via.placeholder.com/300x300/198754/ffffff?text=Product+3" class="card-img-top" alt="Product 3">
+                    <div class="card-body">
+                        <h5 class="card-title">Backpack</h5>
+                        <p class="card-text text-muted">Durable water-resistant backpack</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-primary">$49.99</span>
+                            <span class="badge bg-warning">Low Stock</span>
+                        </div>
+                        <a href="/products/backpack" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 4 -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card product-card">
+                    <img src="https://via.placeholder.com/300x300/ffc107/ffffff?text=Product+4" class="card-img-top" alt="Product 4">
+                    <div class="card-body">
+                        <h5 class="card-title">Coffee Maker</h5>
+                        <p class="card-text text-muted">Programmable 12-cup coffee maker</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-primary">$79.99</span>
+                            <span class="text-success">Free Shipping</span>
+                        </div>
+                        <a href="/products/coffee-maker" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h4>Free Shipping</h4>
+                <p class="text-muted">Free delivery on orders over $50</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h4>Secure Payment</h4>
+                <p class="text-muted">100% secure payment processing</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h4>24/7 Support</h4>
+                <p class="text-muted">Dedicated customer support team</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<%- include('../partials/footer') %>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="/js/main.js"></script>
+
+<script>
+    // Update cart count
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartCount = localStorage.getItem('cartCount') || 0;
+        document.querySelectorAll('.cart-count').forEach(el => {
+            el.textContent = cartCount;
+        });
+    });
+</script>
+
+</body>
+</html>

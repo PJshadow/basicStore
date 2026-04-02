@@ -1,0 +1,32 @@
+<% if (success_msg && success_msg.length > 0) { %>
+    <div class="container mt-3">
+        <% success_msg.forEach(function(message) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> <%= message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% }); %>
+    </div>
+<% } %>
+
+<% if (error_msg && error_msg.length > 0) { %>
+    <div class="container mt-3">
+        <% error_msg.forEach(function(message) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> <%= message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% }); %>
+    </div>
+<% } %>
+
+<% if (error && error.length > 0) { %>
+    <div class="container mt-3">
+        <% error.forEach(function(message) { %>
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> <%= message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% }); %>
+    </div>
+<% } %>

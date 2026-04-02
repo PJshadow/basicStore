@@ -1,0 +1,71 @@
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-store"></i> <%= appName %>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                    
+                    <% if (currentUser && currentUser.role === 'admin') { %>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="/admin">
+                            <i class="fas fa-cog"></i> Admin Panel
+                        </a>
+                    </li>
+                    <% } %>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <% if (currentUser) { %>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> <%= currentUser.username %>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                                <li><a class="dropdown-item" href="/orders">My Orders</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="/auth/logout" method="POST" class="dropdown-item">
+                                        <button type="submit" class="btn btn-link p-0 text-decoration-none">Logout</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/cart">
+                                <i class="fas fa-shopping-cart"></i> Cart
+                                <span class="badge bg-danger cart-count">0</span>
+                            </a>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/register">Register</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
