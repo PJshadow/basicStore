@@ -39,8 +39,12 @@ database.connect((err) => {
   console.log('Database connected successfully');
 });
 
-// Security middleware
-app.use(helmet());
+// Security middleware - disable CSP to allow external resources
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
 
 // Compression middleware
 app.use(compression());
