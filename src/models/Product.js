@@ -58,10 +58,10 @@ class Product {
   // Find product by slug
   static async findBySlug(slug) {
     const sql = `
-      SELECT p.*, c.name as category_name 
+      SELECT p.*, c.name as category_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.slug = ? AND p.active = TRUE
+      WHERE p.slug = ? AND p.active = 1
     `;
     
     try {
@@ -148,10 +148,10 @@ class Product {
   } = {}) {
     const offset = (page - 1) * limit;
     let sql = `
-      SELECT p.*, c.name as category_name 
+      SELECT p.*, c.name as category_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.active = TRUE
+      WHERE p.active = 1
     `;
     
     const params = [];
@@ -161,9 +161,10 @@ class Product {
       params.push(categoryId);
     }
     
-    if (featured !== null) {
+    if (featured != null) { // Check for both null and undefined
       sql += ' AND p.featured = ?';
-      params.push(featured);
+      // Convert boolean to integer for MySQL
+      params.push(featured ? 1 : 0);
     }
     
     if (search) {
@@ -186,8 +187,7 @@ class Product {
     const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
     const order = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
     
-    sql += ` ORDER BY p.${sortColumn} ${order} LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
+    sql += ` ORDER BY p.${sortColumn} ${order} LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
     
     try {
       const [rows] = await promisePool.execute(sql, params);
@@ -205,7 +205,7 @@ class Product {
     minPrice = null,
     maxPrice = null
   } = {}) {
-    let sql = 'SELECT COUNT(*) as total FROM products WHERE active = TRUE';
+    let sql = 'SELECT COUNT(*) as total FROM products WHERE active = 1';
     const params = [];
     
     if (categoryId) {
@@ -213,9 +213,10 @@ class Product {
       params.push(categoryId);
     }
     
-    if (featured !== null) {
+    if (featured != null) { // Check for both null and undefined
       sql += ' AND featured = ?';
-      params.push(featured);
+      // Convert boolean to integer for MySQL
+      params.push(featured ? 1 : 0);
     }
     
     if (search) {
