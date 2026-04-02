@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import mysql from 'mysql2';
+import fs from 'fs'; // For reading the schema.sql file
+import path from 'path'; // For handling file paths
+import mysql from 'mysql2'; // MySQL client for Node.js
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url'; // For ES modules to get __dirname.
 
