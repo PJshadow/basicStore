@@ -33,6 +33,14 @@ router.get('/faq', (req, res) => {
   });
 });
 
+// Cart page
+router.get('/cart', (req, res) => {
+  res.render('home/cart', {
+    title: 'Shopping Cart',
+    currentUser: req.session.user || null
+  });
+});
+
 // Shipping policy
 router.get('/shipping', (req, res) => {
   res.render('home/shipping', {
