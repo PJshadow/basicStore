@@ -1,8 +1,9 @@
-const { promisePool } = require('./db');
+import { promisePool } from './db.js';
 
-class OrderItem {
+// OrderItem factory function - returns an object with all order item methods
+const createOrderItemModel = () => {
   // Create a new order item
-  static async create(orderItemData) {
+  const create = async (orderItemData) => {
     const {
       order_id,
       product_id,
@@ -25,10 +26,10 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error creating order item: ${error.message}`);
     }
-  }
+  };
 
   // Find order item by ID
-  static async findById(id) {
+  const findById = async (id) => {
     const sql = `
       SELECT oi.*, p.name as product_name, p.sku, p.image_url
       FROM order_items oi
@@ -42,10 +43,10 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error finding order item by ID: ${error.message}`);
     }
-  }
+  };
 
   // Update order item
-  static async update(id, orderItemData) {
+  const update = async (id, orderItemData) => {
     const {
       quantity,
       unit_price,
@@ -66,10 +67,10 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error updating order item: ${error.message}`);
     }
-  }
+  };
 
   // Delete order item
-  static async delete(id) {
+  const deleteOrderItem = async (id) => {
     const sql = 'DELETE FROM order_items WHERE id = ?';
     
     try {
@@ -78,10 +79,10 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error deleting order item: ${error.message}`);
     }
-  }
+  };
 
   // Get all order items for an order
-  static async findByOrderId(orderId) {
+  const findByOrderId = async (orderId) => {
     const sql = `
       SELECT oi.*, p.name as product_name, p.sku, p.image_url
       FROM order_items oi
@@ -96,10 +97,10 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error finding order items by order ID: ${error.message}`);
     }
-  }
+  };
 
   // Get order item by order and product
-  static async findByOrderAndProduct(orderId, productId) {
+  const findByOrderAndProduct = async (orderId, productId) => {
     const sql = 'SELECT * FROM order_items WHERE order_id = ? AND product_id = ?';
     
     try {
@@ -108,15 +109,15 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error finding order item by order and product: ${error.message}`);
     }
-  }
+  };
 
   // Calculate item total
-  static calculateTotal(quantity, unitPrice) {
+  const calculateTotal = (quantity, unitPrice) => {
     return quantity * unitPrice;
-  }
+  };
 
   // Validate item stock
-  static async validateStock(productId, quantity) {
+  const validateStock = async (productId, quantity) => {
     const sql = 'SELECT stock_quantity FROM products WHERE id = ? AND active = TRUE';
     
     try {
@@ -139,15 +140,15 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error validating stock: ${error.message}`);
     }
-  }
+  };
 
   // Get order item statistics
-  static async getStatistics(orderId = null) {
+  const getStatistics = async (orderId = null) => {
     let sql = `
       SELECT 
         COUNT(*) as total_items,
         SUM(quantity) as total_quantity,
-        SUM(total_price) as total_value,
+        SUM(total_price) as total_revenue,
         AVG(unit_price) as avg_unit_price
       FROM order_items
     `;
@@ -165,14 +166,14 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error getting order item statistics: ${error.message}`);
     }
-  }
+  };
 
   // Get top selling products
-  static async getTopSelling(limit = 10, startDate = null, endDate = null) {
+  const getTopSellingProducts = async (limit = 10, startDate = null, endDate = null) => {
     let sql = `
       SELECT 
-        p.id as product_id,
-        p.name as product_name,
+        p.id,
+        p.name,
         p.sku,
         p.image_url,
         SUM(oi.quantity) as total_quantity,
@@ -181,19 +182,23 @@ class OrderItem {
       FROM order_items oi
       LEFT JOIN products p ON oi.product_id = p.id
       LEFT JOIN orders o ON oi.order_id = o.id
-      WHERE o.status IN ('delivered', 'shipped', 'processing')
     `;
     
     const params = [];
+    const whereConditions = [];
     
     if (startDate) {
-      sql += ' AND o.created_at >= ?';
+      whereConditions.push('o.created_at >= ?');
       params.push(startDate);
     }
     
     if (endDate) {
-      sql += ' AND o.created_at <= ?';
+      whereConditions.push('o.created_at <= ?');
       params.push(endDate);
+    }
+    
+    if (whereConditions.length > 0) {
+      sql += ' WHERE ' + whereConditions.join(' AND ');
     }
     
     sql += `
@@ -210,19 +215,19 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error getting top selling products: ${error.message}`);
     }
-  }
+  };
 
   // Get product sales history
-  static async getProductSales(productId, startDate = null, endDate = null) {
+  const getProductSalesHistory = async (productId, startDate = null, endDate = null) => {
     let sql = `
       SELECT 
-        DATE(o.created_at) as sale_date,
+        DATE_FORMAT(o.created_at, '%Y-%m') as month,
         SUM(oi.quantity) as total_quantity,
         SUM(oi.total_price) as total_revenue,
         COUNT(DISTINCT oi.order_id) as order_count
       FROM order_items oi
       LEFT JOIN orders o ON oi.order_id = o.id
-      WHERE oi.product_id = ? AND o.status IN ('delivered', 'shipped', 'processing')
+      WHERE oi.product_id = ?
     `;
     
     const params = [productId];
@@ -237,7 +242,10 @@ class OrderItem {
       params.push(endDate);
     }
     
-    sql += ' GROUP BY DATE(o.created_at) ORDER BY sale_date DESC';
+    sql += `
+      GROUP BY month
+      ORDER BY month DESC
+    `;
     
     try {
       const [rows] = await promisePool.execute(sql, params);
@@ -245,7 +253,24 @@ class OrderItem {
     } catch (error) {
       throw new Error(`Error getting product sales history: ${error.message}`);
     }
-  }
-}
+  };
 
-module.exports = OrderItem;
+  // Return all methods as an object
+  return {
+    create,
+    findById,
+    update,
+    delete: deleteOrderItem,
+    findByOrderId,
+    findByOrderAndProduct,
+    calculateTotal,
+    validateStock,
+    getStatistics,
+    getTopSellingProducts,
+    getProductSalesHistory
+  };
+};
+
+// Create and export the order item model
+const OrderItem = createOrderItemModel();
+export default OrderItem;

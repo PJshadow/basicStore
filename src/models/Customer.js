@@ -1,8 +1,9 @@
-const { promisePool } = require('./db');
+import { promisePool } from './db.js';
 
-class Customer {
+// Customer factory function - returns an object with all customer methods
+const createCustomerModel = () => {
   // Create a new customer
-  static async create(customerData) {
+  const create = async (customerData) => {
     const {
       first_name,
       last_name,
@@ -29,10 +30,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error creating customer: ${error.message}`);
     }
-  }
+  };
 
   // Find customer by ID
-  static async findById(id) {
+  const findById = async (id) => {
     const sql = 'SELECT * FROM customers WHERE id = ?';
     
     try {
@@ -41,10 +42,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error finding customer by ID: ${error.message}`);
     }
-  }
+  };
 
   // Find customer by email
-  static async findByEmail(email) {
+  const findByEmail = async (email) => {
     const sql = 'SELECT * FROM customers WHERE email = ?';
     
     try {
@@ -53,10 +54,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error finding customer by email: ${error.message}`);
     }
-  }
+  };
 
   // Update customer
-  static async update(id, customerData) {
+  const update = async (id, customerData) => {
     const {
       first_name,
       last_name,
@@ -85,10 +86,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error updating customer: ${error.message}`);
     }
-  }
+  };
 
   // Delete customer
-  static async delete(id) {
+  const deleteCustomer = async (id) => {
     const sql = 'DELETE FROM customers WHERE id = ?';
     
     try {
@@ -97,10 +98,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error deleting customer: ${error.message}`);
     }
-  }
+  };
 
   // Get all customers with pagination
-  static async findAll(page = 1, limit = 10, search = '') {
+  const findAll = async (page = 1, limit = 10, search = '') => {
     const offset = (page - 1) * limit;
     let sql = 'SELECT * FROM customers';
     let params = [];
@@ -119,10 +120,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error finding all customers: ${error.message}`);
     }
-  }
+  };
 
   // Count total customers
-  static async count(search = '') {
+  const count = async (search = '') => {
     let sql = 'SELECT COUNT(*) as total FROM customers';
     let params = [];
     
@@ -137,10 +138,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error counting customers: ${error.message}`);
     }
-  }
+  };
 
   // Get customer orders
-  static async getOrders(customerId) {
+  const getOrders = async (customerId) => {
     const sql = `
       SELECT o.* FROM orders o
       WHERE o.customer_id = ?
@@ -153,10 +154,10 @@ class Customer {
     } catch (error) {
       throw new Error(`Error getting customer orders: ${error.message}`);
     }
-  }
+  };
 
   // Get customer statistics
-  static async getStatistics(customerId) {
+  const getStatistics = async (customerId) => {
     const sql = `
       SELECT 
         COUNT(o.id) as total_orders,
@@ -172,7 +173,22 @@ class Customer {
     } catch (error) {
       throw new Error(`Error getting customer statistics: ${error.message}`);
     }
-  }
-}
+  };
 
-module.exports = Customer;
+  // Return all methods as an object
+  return {
+    create,
+    findById,
+    findByEmail,
+    update,
+    delete: deleteCustomer,
+    findAll,
+    count,
+    getOrders,
+    getStatistics
+  };
+};
+
+// Create and export the customer model
+const Customer = createCustomerModel();
+export default Customer;

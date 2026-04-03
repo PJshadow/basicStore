@@ -1,8 +1,9 @@
-const { promisePool } = require('./db');
+import { promisePool } from './db.js';
 
-class Coupon {
+// Coupon factory function - returns an object with all coupon methods
+const createCouponModel = () => {
   // Create a new coupon
-  static async create(couponData) {
+  const create = async (couponData) => {
     const {
       code,
       discount_type,
@@ -32,10 +33,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error creating coupon: ${error.message}`);
     }
-  }
+  };
 
   // Find coupon by ID
-  static async findById(id) {
+  const findById = async (id) => {
     const sql = 'SELECT * FROM coupons WHERE id = ?';
     
     try {
@@ -44,10 +45,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error finding coupon by ID: ${error.message}`);
     }
-  }
+  };
 
   // Find coupon by code
-  static async findByCode(code) {
+  const findByCode = async (code) => {
     const sql = 'SELECT * FROM coupons WHERE code = ?';
     
     try {
@@ -56,10 +57,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error finding coupon by code: ${error.message}`);
     }
-  }
+  };
 
   // Update coupon
-  static async update(id, couponData) {
+  const update = async (id, couponData) => {
     const {
       code,
       discount_type,
@@ -90,10 +91,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error updating coupon: ${error.message}`);
     }
-  }
+  };
 
   // Delete coupon
-  static async delete(id) {
+  const deleteCoupon = async (id) => {
     const sql = 'DELETE FROM coupons WHERE id = ?';
     
     try {
@@ -102,10 +103,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error deleting coupon: ${error.message}`);
     }
-  }
+  };
 
   // Get all coupons with pagination
-  static async findAll(page = 1, limit = 10, activeOnly = false) {
+  const findAll = async (page = 1, limit = 10, activeOnly = false) => {
     const offset = (page - 1) * limit;
     let sql = 'SELECT * FROM coupons';
     const params = [];
@@ -123,10 +124,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error finding all coupons: ${error.message}`);
     }
-  }
+  };
 
   // Count total coupons
-  static async count(activeOnly = false) {
+  const count = async (activeOnly = false) => {
     let sql = 'SELECT COUNT(*) as total FROM coupons';
     
     if (activeOnly) {
@@ -139,11 +140,11 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error counting coupons: ${error.message}`);
     }
-  }
+  };
 
   // Validate coupon
-  static async validate(code, userId = null, orderAmount = 0) {
-    const coupon = await this.findByCode(code);
+  const validate = async (code, userId = null, orderAmount = 0) => {
+    const coupon = await findByCode(code);
     
     if (!coupon) {
       return { valid: false, message: 'Coupon not found' };
@@ -173,7 +174,7 @@ class Coupon {
     
     // Check usage limit
     if (coupon.usage_limit) {
-      const usageCount = await this.getUsageCount(coupon.id);
+      const usageCount = await getUsageCount(coupon.id);
       if (usageCount >= coupon.usage_limit) {
         return { valid: false, message: 'Coupon usage limit reached' };
       }
@@ -181,7 +182,7 @@ class Coupon {
     
     // Check per-user usage limit
     if (coupon.usage_limit_per_user && userId) {
-      const userUsageCount = await this.getUserUsageCount(coupon.id, userId);
+      const userUsageCount = await getUserUsageCount(coupon.id, userId);
       if (userUsageCount >= coupon.usage_limit_per_user) {
         return { valid: false, message: 'You have already used this coupon' };
       }
@@ -207,10 +208,10 @@ class Coupon {
       discountAmount,
       message: `Coupon applied: $${discountAmount.toFixed(2)} discount`
     };
-  }
+  };
 
   // Get coupon usage count
-  static async getUsageCount(couponId) {
+  const getUsageCount = async (couponId) => {
     const sql = 'SELECT COUNT(*) as count FROM orders WHERE coupon_id = ?';
     
     try {
@@ -219,10 +220,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error getting coupon usage count: ${error.message}`);
     }
-  }
+  };
 
   // Get user usage count for a coupon
-  static async getUserUsageCount(couponId, userId) {
+  const getUserUsageCount = async (couponId, userId) => {
     const sql = `
       SELECT COUNT(*) as count 
       FROM orders 
@@ -235,10 +236,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error getting user coupon usage count: ${error.message}`);
     }
-  }
+  };
 
   // Record coupon usage
-  static async recordUsage(couponId, orderId, customerId) {
+  const recordUsage = async (couponId, orderId, customerId) => {
     const sql = 'UPDATE orders SET coupon_id = ? WHERE id = ?';
     
     try {
@@ -247,10 +248,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error recording coupon usage: ${error.message}`);
     }
-  }
+  };
 
   // Get coupon statistics
-  static async getStatistics() {
+  const getStatistics = async () => {
     const sql = `
       SELECT 
         COUNT(*) as total_coupons,
@@ -267,10 +268,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error getting coupon statistics: ${error.message}`);
     }
-  }
+  };
 
   // Get expired coupons
-  static async getExpired() {
+  const getExpired = async () => {
     const sql = `
       SELECT * FROM coupons 
       WHERE valid_until < CURDATE() AND active = TRUE
@@ -283,10 +284,10 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error getting expired coupons: ${error.message}`);
     }
-  }
+  };
 
   // Get active coupons
-  static async getActive() {
+  const getActive = async () => {
     const sql = `
       SELECT * FROM coupons 
       WHERE active = TRUE AND (valid_until IS NULL OR valid_until >= CURDATE())
@@ -299,7 +300,27 @@ class Coupon {
     } catch (error) {
       throw new Error(`Error getting active coupons: ${error.message}`);
     }
-  }
-}
+  };
 
-module.exports = Coupon;
+  // Return all methods as an object
+  return {
+    create,
+    findById,
+    findByCode,
+    update,
+    delete: deleteCoupon,
+    findAll,
+    count,
+    validate,
+    getUsageCount,
+    getUserUsageCount,
+    recordUsage,
+    getStatistics,
+    getExpired,
+    getActive
+  };
+};
+
+// Create and export the coupon model
+const Coupon = createCouponModel();
+export default Coupon;

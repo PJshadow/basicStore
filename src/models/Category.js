@@ -1,8 +1,9 @@
 import { promisePool } from './db.js';
 
-class Category {
+// Category factory function - returns an object with all category methods
+const createCategoryModel = () => {
   // Create a new category
-  static async create(categoryData) {
+  const create = async (categoryData) => {
     const { name, slug, description, parent_id = null } = categoryData;
     
     const sql = `
@@ -16,10 +17,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error creating category: ${error.message}`);
     }
-  }
+  };
 
   // Find category by ID
-  static async findById(id) {
+  const findById = async (id) => {
     const sql = 'SELECT * FROM categories WHERE id = ?';
     
     try {
@@ -28,10 +29,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error finding category by ID: ${error.message}`);
     }
-  }
+  };
 
   // Find category by slug
-  static async findBySlug(slug) {
+  const findBySlug = async (slug) => {
     const sql = 'SELECT * FROM categories WHERE slug = ?';
     
     try {
@@ -40,10 +41,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error finding category by slug: ${error.message}`);
     }
-  }
+  };
 
   // Update category
-  static async update(id, categoryData) {
+  const update = async (id, categoryData) => {
     const { name, slug, description, parent_id } = categoryData;
     
     const sql = `
@@ -58,10 +59,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error updating category: ${error.message}`);
     }
-  }
+  };
 
   // Delete category
-  static async delete(id) {
+  const deleteCategory = async (id) => {
     const sql = 'DELETE FROM categories WHERE id = ?';
     
     try {
@@ -70,10 +71,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error deleting category: ${error.message}`);
     }
-  }
+  };
 
   // Get all categories
-  static async findAll(includeProducts = false) {
+  const findAll = async (includeProducts = false) => {
     const sql = 'SELECT * FROM categories ORDER BY name';
     
     try {
@@ -92,10 +93,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error finding all categories: ${error.message}`);
     }
-  }
+  };
 
   // Get categories with hierarchy
-  static async getHierarchy() {
+  const getHierarchy = async () => {
     const sql = 'SELECT * FROM categories ORDER BY parent_id, name';
     
     try {
@@ -124,10 +125,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error getting category hierarchy: ${error.message}`);
     }
-  }
+  };
 
   // Get subcategories
-  static async getSubcategories(parentId) {
+  const getSubcategories = async (parentId) => {
     const sql = 'SELECT * FROM categories WHERE parent_id = ? ORDER BY name';
     
     try {
@@ -136,10 +137,10 @@ class Category {
     } catch (error) {
       throw new Error(`Error getting subcategories: ${error.message}`);
     }
-  }
+  };
 
   // Count products in category
-  static async countProducts(categoryId) {
+  const countProducts = async (categoryId) => {
     const sql = 'SELECT COUNT(*) as total FROM products WHERE category_id = ? AND active = TRUE';
     
     try {
@@ -148,14 +149,14 @@ class Category {
     } catch (error) {
       throw new Error(`Error counting products in category: ${error.message}`);
     }
-  }
+  };
 
   // Get category with products (paginated)
-  static async getWithProducts(categoryId, page = 1, limit = 12) {
+  const getWithProducts = async (categoryId, page = 1, limit = 12) => {
     const offset = (page - 1) * limit;
     
     // Get category info
-    const category = await this.findById(categoryId);
+    const category = await findById(categoryId);
     if (!category) return null;
     
     // Get products
@@ -183,7 +184,23 @@ class Category {
     } catch (error) {
       throw new Error(`Error getting category with products: ${error.message}`);
     }
-  }
-}
+  };
 
+  // Return all methods as an object
+  return {
+    create,
+    findById,
+    findBySlug,
+    update,
+    delete: deleteCategory,
+    findAll,
+    getHierarchy,
+    getSubcategories,
+    countProducts,
+    getWithProducts
+  };
+};
+
+// Create and export the category model
+const Category = createCategoryModel();
 export default Category;

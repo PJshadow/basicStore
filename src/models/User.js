@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt';
 import { promisePool } from './db.js';
 
-class User {
+// User factory function - returns an object with all user methods
+const createUserModel = () => {
   // Create a new user
-  static async create(userData) {
+  const create = async (userData) => {
     const { username, email, password, role = 'staff' } = userData;
     
     // Hash password
@@ -21,10 +22,10 @@ class User {
     } catch (error) {
       throw new Error(`Error creating user: ${error.message}`);
     }
-  }
+  };
 
   // Find user by ID
-  static async findById(id) {
+  const findById = async (id) => {
     const sql = 'SELECT id, username, email, role, created_at, updated_at FROM users WHERE id = ?';
     
     try {
@@ -33,10 +34,10 @@ class User {
     } catch (error) {
       throw new Error(`Error finding user by ID: ${error.message}`);
     }
-  }
+  };
 
   // Find user by email
-  static async findByEmail(email) {
+  const findByEmail = async (email) => {
     const sql = 'SELECT * FROM users WHERE email = ?';
     
     try {
@@ -45,10 +46,10 @@ class User {
     } catch (error) {
       throw new Error(`Error finding user by email: ${error.message}`);
     }
-  }
+  };
 
   // Find user by username
-  static async findByUsername(username) {
+  const findByUsername = async (username) => {
     const sql = 'SELECT * FROM users WHERE username = ?';
     
     try {
@@ -57,10 +58,10 @@ class User {
     } catch (error) {
       throw new Error(`Error finding user by username: ${error.message}`);
     }
-  }
+  };
 
   // Update user
-  static async update(id, userData) {
+  const update = async (id, userData) => {
     const { username, email, role } = userData;
     const sql = `
       UPDATE users 
@@ -74,10 +75,10 @@ class User {
     } catch (error) {
       throw new Error(`Error updating user: ${error.message}`);
     }
-  }
+  };
 
   // Update password
-  static async updatePassword(id, newPassword) {
+  const updatePassword = async (id, newPassword) => {
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10;
     const passwordHash = await bcrypt.hash(newPassword, saltRounds);
     
@@ -89,10 +90,10 @@ class User {
     } catch (error) {
       throw new Error(`Error updating password: ${error.message}`);
     }
-  }
+  };
 
   // Delete user
-  static async delete(id) {
+  const deleteUser = async (id) => {
     const sql = 'DELETE FROM users WHERE id = ?';
     
     try {
@@ -101,10 +102,10 @@ class User {
     } catch (error) {
       throw new Error(`Error deleting user: ${error.message}`);
     }
-  }
+  };
 
   // Get all users with pagination
-  static async findAll(page = 1, limit = 10) {
+  const findAll = async (page = 1, limit = 10) => {
     const offset = (page - 1) * limit;
     const sql = `
       SELECT id, username, email, role, created_at, updated_at 
@@ -119,10 +120,10 @@ class User {
     } catch (error) {
       throw new Error(`Error finding all users: ${error.message}`);
     }
-  }
+  };
 
   // Count total users
-  static async count() {
+  const count = async () => {
     const sql = 'SELECT COUNT(*) as total FROM users';
     
     try {
@@ -131,12 +132,28 @@ class User {
     } catch (error) {
       throw new Error(`Error counting users: ${error.message}`);
     }
-  }
+  };
 
   // Verify password
-  static async verifyPassword(user, password) {
+  const verifyPassword = async (user, password) => {
     return await bcrypt.compare(password, user.password_hash);
-  }
-}
+  };
 
+  // Return all methods as an object
+  return {
+    create,
+    findById,
+    findByEmail,
+    findByUsername,
+    update,
+    updatePassword,
+    delete: deleteUser,
+    findAll,
+    count,
+    verifyPassword
+  };
+};
+
+// Create and export the user model
+const User = createUserModel();
 export default User;

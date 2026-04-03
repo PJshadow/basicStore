@@ -1,8 +1,9 @@
 import { promisePool } from './db.js';
 
-class Product {
+// Product factory function - returns an object with all product methods
+const createProductModel = () => {
   // Create a new product
-  static async create(productData) {
+  const create = async (productData) => {
     const {
       name,
       slug,
@@ -36,10 +37,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error creating product: ${error.message}`);
     }
-  }
+  };
 
   // Find product by ID
-  static async findById(id) {
+  const findById = async (id) => {
     const sql = `
       SELECT p.*, c.name as category_name 
       FROM products p
@@ -53,10 +54,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error finding product by ID: ${error.message}`);
     }
-  }
+  };
 
   // Find product by slug
-  static async findBySlug(slug) {
+  const findBySlug = async (slug) => {
     const sql = `
       SELECT p.*, c.name as category_name
       FROM products p
@@ -70,10 +71,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error finding product by slug: ${error.message}`);
     }
-  }
+  };
 
   // Find product by SKU
-  static async findBySku(sku) {
+  const findBySku = async (sku) => {
     const sql = 'SELECT * FROM products WHERE sku = ?';
     
     try {
@@ -82,10 +83,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error finding product by SKU: ${error.message}`);
     }
-  }
+  };
 
   // Update product
-  static async update(id, productData) {
+  const update = async (id, productData) => {
     const {
       name,
       slug,
@@ -120,10 +121,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error updating product: ${error.message}`);
     }
-  }
+  };
 
   // Delete product
-  static async delete(id) {
+  const deleteProduct = async (id) => {
     const sql = 'DELETE FROM products WHERE id = ?';
     
     try {
@@ -132,10 +133,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error deleting product: ${error.message}`);
     }
-  }
+  };
 
   // Get all products with pagination and filters
-  static async findAll({
+  const findAll = async ({
     page = 1,
     limit = 12,
     categoryId = null,
@@ -145,7 +146,7 @@ class Product {
     maxPrice = null,
     sortBy = 'created_at',
     sortOrder = 'DESC'
-  } = {}) {
+  } = {}) => {
     const offset = (page - 1) * limit;
     let sql = `
       SELECT p.*, c.name as category_name
@@ -195,16 +196,16 @@ class Product {
     } catch (error) {
       throw new Error(`Error finding all products: ${error.message}`);
     }
-  }
+  };
 
   // Count products with filters
-  static async count({
+  const count = async ({
     categoryId = null,
     featured = null,
     search = '',
     minPrice = null,
     maxPrice = null
-  } = {}) {
+  } = {}) => {
     let sql = 'SELECT COUNT(*) as total FROM products WHERE active = 1';
     const params = [];
     
@@ -240,10 +241,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error counting products: ${error.message}`);
     }
-  }
+  };
 
   // Update stock quantity
-  static async updateStock(id, quantityChange) {
+  const updateStock = async (id, quantityChange) => {
     const sql = 'UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?';
     
     try {
@@ -252,10 +253,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error updating stock: ${error.message}`);
     }
-  }
+  };
 
   // Get low stock products
-  static async getLowStock(threshold = 5) {
+  const getLowStock = async (threshold = 5) => {
     const sql = `
       SELECT * FROM products 
       WHERE stock_quantity <= ? AND active = TRUE
@@ -268,10 +269,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error getting low stock products: ${error.message}`);
     }
-  }
+  };
 
   // Get featured products
-  static async getFeatured(limit = 8) {
+  const getFeatured = async (limit = 8) => {
     const sql = `
       SELECT * FROM products 
       WHERE featured = TRUE AND active = TRUE
@@ -285,10 +286,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error getting featured products: ${error.message}`);
     }
-  }
+  };
 
   // Get related products
-  static async getRelated(productId, categoryId, limit = 4) {
+  const getRelated = async (productId, categoryId, limit = 4) => {
     const sql = `
       SELECT * FROM products 
       WHERE category_id = ? AND id != ? AND active = TRUE
@@ -302,10 +303,10 @@ class Product {
     } catch (error) {
       throw new Error(`Error getting related products: ${error.message}`);
     }
-  }
+  };
 
   // Get product statistics
-  static async getStatistics() {
+  const getStatistics = async () => {
     const sql = `
       SELECT 
         COUNT(*) as total_products,
@@ -322,7 +323,26 @@ class Product {
     } catch (error) {
       throw new Error(`Error getting product statistics: ${error.message}`);
     }
-  }
-}
+  };
 
+  // Return all methods as an object
+  return {
+    create,
+    findById,
+    findBySlug,
+    findBySku,
+    update,
+    delete: deleteProduct,
+    findAll,
+    count,
+    updateStock,
+    getLowStock,
+    getFeatured,
+    getRelated,
+    getStatistics
+  };
+};
+
+// Create and export the product model
+const Product = createProductModel();
 export default Product;

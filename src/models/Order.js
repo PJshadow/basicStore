@@ -1,15 +1,16 @@
-const { promisePool } = require('./db');
+import { promisePool } from './db.js';
 
-class Order {
+// Order factory function - returns an object with all order methods
+const createOrderModel = () => {
   // Generate unique order number
-  static generateOrderNumber() {
+  const generateOrderNumber = () => {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 1000);
     return `ORD-${timestamp}-${random}`;
-  }
+  };
 
   // Create a new order
-  static async create(orderData) {
+  const create = async (orderData) => {
     const {
       customer_id,
       status = 'pending',
@@ -24,7 +25,7 @@ class Order {
       items = []
     } = orderData;
     
-    const order_number = this.generateOrderNumber();
+    const order_number = generateOrderNumber();
     
     const connection = await promisePool.getConnection();
     
@@ -84,10 +85,10 @@ class Order {
     } finally {
       connection.release();
     }
-  }
+  };
 
   // Find order by ID
-  static async findById(id) {
+  const findById = async (id) => {
     const sql = `
       SELECT o.*, 
              c.first_name, c.last_name, c.email, c.phone,
@@ -106,10 +107,10 @@ class Order {
     } catch (error) {
       throw new Error(`Error finding order by ID: ${error.message}`);
     }
-  }
+  };
 
   // Find order by order number
-  static async findByOrderNumber(orderNumber) {
+  const findByOrderNumber = async (orderNumber) => {
     const sql = `
       SELECT o.*, 
              c.first_name, c.last_name, c.email, c.phone
@@ -124,10 +125,10 @@ class Order {
     } catch (error) {
       throw new Error(`Error finding order by order number: ${error.message}`);
     }
-  }
+  };
 
   // Update order status
-  static async updateStatus(id, status) {
+  const updateStatus = async (id, status) => {
     const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
     
     if (!validStatuses.includes(status)) {
@@ -142,11 +143,12 @@ class Order {
     } catch (error) {
       throw new Error(`Error updating order status: ${error.message}`);
     }
-  }
+  };
 
   // Update order
-  static async update(id, orderData) {
+  const update = async (id, orderData) => {
     const {
+      customer_id,
       status,
       subtotal,
       tax_amount,
@@ -160,68 +162,45 @@ class Order {
     
     const sql = `
       UPDATE orders 
-      SET status = ?, subtotal = ?, tax_amount = ?, shipping_amount = ?, 
-          total_amount = ?, payment_method = ?, shipping_address = ?, 
-          billing_address = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+      SET customer_id = ?, status = ?, subtotal = ?, tax_amount = ?, shipping_amount = ?,
+          total_amount = ?, payment_method = ?, shipping_address = ?, billing_address = ?,
+          notes = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
     
     try {
       const [result] = await promisePool.execute(sql, [
-        status, subtotal, tax_amount, shipping_amount, total_amount,
-        payment_method, shipping_address, billing_address, notes, id
+        customer_id, status, subtotal, tax_amount, shipping_amount,
+        total_amount, payment_method, shipping_address, billing_address, notes, id
       ]);
       return result.affectedRows > 0;
     } catch (error) {
       throw new Error(`Error updating order: ${error.message}`);
     }
-  }
+  };
 
   // Delete order
-  static async delete(id) {
-    const connection = await promisePool.getConnection();
+  const deleteOrder = async (id) => {
+    const sql = 'DELETE FROM orders WHERE id = ?';
     
     try {
-      await connection.beginTransaction();
-      
-      // Get order items to restore stock
-      const itemsSql = 'SELECT product_id, quantity FROM order_items WHERE order_id = ?';
-      const [items] = await connection.execute(itemsSql, [id]);
-      
-      // Restore stock for each product
-      for (const item of items) {
-        const restoreStockSql = 'UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?';
-        await connection.execute(restoreStockSql, [item.quantity, item.product_id]);
-      }
-      
-      // Delete order items
-      const deleteItemsSql = 'DELETE FROM order_items WHERE order_id = ?';
-      await connection.execute(deleteItemsSql, [id]);
-      
-      // Delete order
-      const deleteOrderSql = 'DELETE FROM orders WHERE id = ?';
-      const [result] = await connection.execute(deleteOrderSql, [id]);
-      
-      await connection.commit();
+      const [result] = await promisePool.execute(sql, [id]);
       return result.affectedRows > 0;
     } catch (error) {
-      await connection.rollback();
       throw new Error(`Error deleting order: ${error.message}`);
-    } finally {
-      connection.release();
     }
-  }
+  };
 
   // Get all orders with pagination and filters
-  static async findAll({
+  const findAll = async ({
     page = 1,
     limit = 10,
-    customerId = null,
     status = null,
+    customerId = null,
     startDate = null,
     endDate = null,
     search = ''
-  } = {}) {
+  } = {}) => {
     const offset = (page - 1) * limit;
     let sql = `
       SELECT o.*, 
@@ -231,34 +210,38 @@ class Order {
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      WHERE 1=1
     `;
     
     const params = [];
-    
-    if (customerId) {
-      sql += ' AND o.customer_id = ?';
-      params.push(customerId);
-    }
+    const whereConditions = [];
     
     if (status) {
-      sql += ' AND o.status = ?';
+      whereConditions.push('o.status = ?');
       params.push(status);
     }
     
+    if (customerId) {
+      whereConditions.push('o.customer_id = ?');
+      params.push(customerId);
+    }
+    
     if (startDate) {
-      sql += ' AND o.created_at >= ?';
+      whereConditions.push('o.created_at >= ?');
       params.push(startDate);
     }
     
     if (endDate) {
-      sql += ' AND o.created_at <= ?';
+      whereConditions.push('o.created_at <= ?');
       params.push(endDate);
     }
     
     if (search) {
-      sql += ' AND (o.order_number LIKE ? OR c.first_name LIKE ? OR c.last_name LIKE ? OR c.email LIKE ?)';
+      whereConditions.push('(o.order_number LIKE ? OR c.first_name LIKE ? OR c.last_name LIKE ? OR c.email LIKE ?)');
       params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    
+    if (whereConditions.length > 0) {
+      sql += ' WHERE ' + whereConditions.join(' AND ');
     }
     
     sql += ' GROUP BY o.id ORDER BY o.created_at DESC LIMIT ? OFFSET ?';
@@ -270,48 +253,41 @@ class Order {
     } catch (error) {
       throw new Error(`Error finding all orders: ${error.message}`);
     }
-  }
+  };
 
   // Count orders with filters
-  static async count({
-    customerId = null,
+  const count = async ({
     status = null,
+    customerId = null,
     startDate = null,
-    endDate = null,
-    search = ''
-  } = {}) {
-    let sql = `
-      SELECT COUNT(DISTINCT o.id) as total
-      FROM orders o
-      LEFT JOIN customers c ON o.customer_id = c.id
-      WHERE 1=1
-    `;
-    
+    endDate = null
+  } = {}) => {
+    let sql = 'SELECT COUNT(*) as total FROM orders';
     const params = [];
-    
-    if (customerId) {
-      sql += ' AND o.customer_id = ?';
-      params.push(customerId);
-    }
+    const whereConditions = [];
     
     if (status) {
-      sql += ' AND o.status = ?';
+      whereConditions.push('status = ?');
       params.push(status);
     }
     
+    if (customerId) {
+      whereConditions.push('customer_id = ?');
+      params.push(customerId);
+    }
+    
     if (startDate) {
-      sql += ' AND o.created_at >= ?';
+      whereConditions.push('created_at >= ?');
       params.push(startDate);
     }
     
     if (endDate) {
-      sql += ' AND o.created_at <= ?';
+      whereConditions.push('created_at <= ?');
       params.push(endDate);
     }
     
-    if (search) {
-      sql += ' AND (o.order_number LIKE ? OR c.first_name LIKE ? OR c.last_name LIKE ? OR c.email LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    if (whereConditions.length > 0) {
+      sql += ' WHERE ' + whereConditions.join(' AND ');
     }
     
     try {
@@ -320,16 +296,15 @@ class Order {
     } catch (error) {
       throw new Error(`Error counting orders: ${error.message}`);
     }
-  }
+  };
 
   // Get order items
-  static async getItems(orderId) {
+  const getItems = async (orderId) => {
     const sql = `
-      SELECT oi.*, p.name as product_name, p.sku, p.image_url
+      SELECT oi.*, p.name as product_name, p.image_url as product_image
       FROM order_items oi
       LEFT JOIN products p ON oi.product_id = p.id
       WHERE oi.order_id = ?
-      ORDER BY oi.id
     `;
     
     try {
@@ -338,58 +313,53 @@ class Order {
     } catch (error) {
       throw new Error(`Error getting order items: ${error.message}`);
     }
-  }
-
-  // Get order with items
-  static async getWithItems(id) {
-    const order = await this.findById(id);
-    if (!order) return null;
-    
-    const items = await this.getItems(id);
-    order.items = items;
-    
-    return order;
-  }
+  };
 
   // Get order statistics
-  static async getStatistics(startDate = null, endDate = null) {
-    let sql = `
+  const getStatistics = async (period = 'month') => {
+    let dateFormat, interval;
+    
+    switch (period) {
+      case 'day':
+        dateFormat = '%Y-%m-%d';
+        interval = '1 DAY';
+        break;
+      case 'week':
+        dateFormat = '%Y-%u';
+        interval = '1 WEEK';
+        break;
+      case 'month':
+      default:
+        dateFormat = '%Y-%m';
+        interval = '1 MONTH';
+        break;
+      case 'year':
+        dateFormat = '%Y';
+        interval = '1 YEAR';
+        break;
+    }
+    
+    const sql = `
       SELECT 
         COUNT(*) as total_orders,
         SUM(total_amount) as total_revenue,
         AVG(total_amount) as avg_order_value,
-        COUNT(DISTINCT customer_id) as unique_customers,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_orders,
-        SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing_orders,
-        SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) as shipped_orders,
-        SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered_orders,
+        SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as completed_orders,
         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_orders
       FROM orders
-      WHERE 1=1
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${interval})
     `;
     
-    const params = [];
-    
-    if (startDate) {
-      sql += ' AND created_at >= ?';
-      params.push(startDate);
-    }
-    
-    if (endDate) {
-      sql += ' AND created_at <= ?';
-      params.push(endDate);
-    }
-    
     try {
-      const [rows] = await promisePool.execute(sql, params);
+      const [rows] = await promisePool.execute(sql);
       return rows[0];
     } catch (error) {
       throw new Error(`Error getting order statistics: ${error.message}`);
     }
-  }
+  };
 
   // Get revenue by period
-  static async getRevenueByPeriod(period = 'day', limit = 30) {
+  const getRevenueByPeriod = async (period = 'month', limit = 12) => {
     let dateFormat;
     
     switch (period) {
@@ -400,17 +370,20 @@ class Order {
         dateFormat = '%Y-%u';
         break;
       case 'month':
+      default:
         dateFormat = '%Y-%m';
         break;
-      default:
-        dateFormat = '%Y-%m-%d';
+      case 'year':
+        dateFormat = '%Y';
+        break;
     }
     
     const sql = `
       SELECT 
         DATE_FORMAT(created_at, ?) as period,
         COUNT(*) as order_count,
-        SUM(total_amount) as revenue
+        SUM(total_amount) as revenue,
+        AVG(total_amount) as avg_order_value
       FROM orders
       WHERE status IN ('delivered', 'shipped', 'processing')
       GROUP BY period
@@ -424,7 +397,25 @@ class Order {
     } catch (error) {
       throw new Error(`Error getting revenue by period: ${error.message}`);
     }
-  }
-}
+  };
 
-module.exports = Order;
+  // Return all methods as an object
+  return {
+    generateOrderNumber,
+    create,
+    findById,
+    findByOrderNumber,
+    updateStatus,
+    update,
+    delete: deleteOrder,
+    findAll,
+    count,
+    getItems,
+    getStatistics,
+    getRevenueByPeriod
+  };
+};
+
+// Create and export the order model
+const Order = createOrderModel();
+export default Order;
