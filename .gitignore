@@ -100,7 +100,6 @@ dist
 
 # Gatsby files
 .cache/
-public
 
 # VuePress build output
 .vuepress/dist
@@ -125,7 +124,7 @@ tmp/
 temp/
 
 # Uploads directory (product images)
-src/public/uploads/*
+# src/public/uploads/*
 
 # IDE files
 .vscode/
