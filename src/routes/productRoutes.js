@@ -128,10 +128,10 @@ router.get('/:slug', async (req, res) => {
         },
         images: product.image_url ? [
           product.image_url,
-          'https://via.placeholder.com/600x600/6c757d/ffffff?text=Product+2',
-          'https://via.placeholder.com/600x600/6c757d/ffffff?text=Product+3'
+          product.image_url.replace('.png', '-2.png'),
+          product.image_url.replace('.png', '-3.png')
         ] : [
-          'https://via.placeholder.com/600x600/6c757d/ffffff?text=Product'
+          '/images/product-placeholder.png'
         ]
       },
       relatedProducts,
