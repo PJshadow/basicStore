@@ -277,11 +277,11 @@ const createProductModel = () => {
       SELECT * FROM products 
       WHERE featured = TRUE AND active = TRUE
       ORDER BY created_at DESC
-      LIMIT ?
+      LIMIT ${parseInt(limit)}
     `;
     
     try {
-      const [rows] = await promisePool.execute(sql, [limit]);
+      const [rows] = await promisePool.query(sql);
       return rows;
     } catch (error) {
       throw new Error(`Error getting featured products: ${error.message}`);
@@ -294,11 +294,11 @@ const createProductModel = () => {
       SELECT * FROM products 
       WHERE category_id = ? AND id != ? AND active = TRUE
       ORDER BY RAND()
-      LIMIT ?
+      LIMIT ${parseInt(limit)}
     `;
     
     try {
-      const [rows] = await promisePool.execute(sql, [categoryId, productId, limit]);
+      const [rows] = await promisePool.query(sql, [categoryId, productId]);
       return rows;
     } catch (error) {
       throw new Error(`Error getting related products: ${error.message}`);

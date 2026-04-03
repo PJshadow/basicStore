@@ -167,4 +167,13 @@ INSERT INTO products (name, slug, description, short_description, price, categor
 ('Smart Watch', 'smart-watch', 'Track fitness, receive notifications', 'Fitness tracking smart watch', 199.99, 1, 30, 'https://via.placeholder.com/300x300/0dcaf0/ffffff?text=Smart+Watch', 1),
 ('Backpack', 'backpack', 'Durable water-resistant backpack', 'Water-resistant travel backpack', 49.99, 2, 100, 'https://via.placeholder.com/300x300/198754/ffffff?text=Backpack', 1),
 ('Coffee Maker', 'coffee-maker', 'Programmable 12-cup coffee maker', 'Automatic coffee maker', 79.99, 3, 25, 'https://via.placeholder.com/300x300/ffc107/ffffff?text=Coffee+Maker', 1)
-ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
+ON DUPLICATE KEY UPDATE 
+    name = VALUES(name),
+    description = VALUES(description),
+    short_description = VALUES(short_description),
+    price = VALUES(price),
+    category_id = VALUES(category_id),
+    stock_quantity = VALUES(stock_quantity),
+    image_url = VALUES(image_url),
+    featured = VALUES(featured),
+    updated_at = CURRENT_TIMESTAMP;
