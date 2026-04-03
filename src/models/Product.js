@@ -13,8 +13,8 @@ const createProductModel = () => {
     const {
       name,
       slug,
-      description,
-      short_description,
+      description = null,
+      short_description = null,
       sku,
       price,
       sale_price = null,
@@ -96,14 +96,14 @@ const createProductModel = () => {
     const {
       name,
       slug,
-      description,
-      short_description,
+      description = null,
+      short_description = null,
       sku,
       price,
-      sale_price,
-      cost,
+      sale_price = null,
+      cost = null,
       stock_quantity,
-      low_stock_threshold,
+      low_stock_threshold = 5,
       category_id,
       featured,
       active,
@@ -245,13 +245,35 @@ const createProductModel = () => {
 
   // Delete product
   const deleteProduct = async (id) => {
-    const sql = 'DELETE FROM products WHERE id = ?';
-    
+    const connection = await promisePool.getConnection();
+    await connection.beginTransaction();
     try {
-      const [result] = await promisePool.execute(sql, [id]);
+      // Get all images first to delete files
+      const images = await getImages(id);
+      
+      // Delete physical files
+      for (const img of images) {
+        if (img.image_url.startsWith('/images/')) {
+          const fileName = img.image_url.replace('/images/', '');
+          const filePath = path.join(__dirname, '../public/images', fileName);
+          try {
+            await fs.unlink(filePath);
+          } catch (err) {
+            console.warn(`Could not delete physical file during product deletion: ${filePath}`, err.message);
+          }
+        }
+      }
+
+      // Delete from products table (cascades to product_images in DB)
+      const [result] = await connection.execute('DELETE FROM products WHERE id = ?', [id]);
+      
+      await connection.commit();
       return result.affectedRows > 0;
     } catch (error) {
-      throw new Error(`Error deleting product: ${error.message}`);
+      await connection.rollback();
+      throw new Error(`Error deleting product and its images: ${error.message}`);
+    } finally {
+      connection.release();
     }
   };
 

@@ -240,21 +240,28 @@ export default {
   },
 
   createProduct: async (req, res) => {
-    try {
-      const {
-        name,
-        slug,
-        description,
-        price,
-        stock_quantity,
-        category_id,
-        extra_images
-      } = req.body;
+    const {
+      name,
+      slug,
+      description,
+      price,
+      stock_quantity,
+      category_id
+    } = req.body;
 
+    try {
       // Basic validation
       if (!name || !price || !stock_quantity || !category_id) {
+        const categories = await Category.findAll();
         req.flash('error_msg', 'Please fill in all required fields');
-        return res.redirect('/admin/products/new');
+        return res.render('admin/products/create', {
+          title: 'Add New Product',
+          currentUser: req.session.user,
+          sidebar: true,
+          activePage: 'products',
+          categories,
+          product: req.body // Pass back the form data
+        });
       }
 
       // Generate slug if not provided
@@ -263,11 +270,20 @@ export default {
       // Check if slug already exists
       const existingProduct = await Product.findBySlug(productSlug);
       if (existingProduct) {
+        const categories = await Category.findAll();
         req.flash('error_msg', 'Product slug already exists. Please choose another or leave blank for auto-generation.');
-        return res.redirect('/admin/products/new');
+        return res.render('admin/products/create', {
+          title: 'Add New Product',
+          currentUser: req.session.user,
+          sidebar: true,
+          activePage: 'products',
+          categories,
+          product: req.body // Pass back the form data
+        });
       }
 
       // uploaded files
+      const imageUrls = [];
       if (req.files && req.files.length > 0) {
         req.files.forEach(file => {
           imageUrls.push('/images/' + file.filename);
@@ -300,8 +316,16 @@ export default {
       res.redirect('/admin/products');
     } catch (error) {
       console.error('Create product error:', error);
+      const categories = await Category.findAll().catch(() => []);
       req.flash('error_msg', 'Error creating product: ' + error.message);
-      res.redirect('/admin/products/new');
+      res.render('admin/products/create', {
+        title: 'Add New Product',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'products',
+        categories,
+        product: req.body // Pass back the form data
+      });
     }
   },
 
@@ -396,8 +420,20 @@ export default {
       res.redirect('/admin/products');
     } catch (error) {
       console.error('Update product error:', error);
+      const [categories, images] = await Promise.all([
+        Category.findAll().catch(() => []),
+        Product.getImages(id).catch(() => [])
+      ]);
       req.flash('error_msg', 'Error updating product: ' + error.message);
-      res.redirect(`/admin/products/${req.params.id}/edit`);
+      res.render('admin/products/edit', {
+        title: 'Edit Product',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'products',
+        product: { ...req.body, id }, // Pass back the form data including ID
+        categories,
+        images
+      });
     }
   },
 
