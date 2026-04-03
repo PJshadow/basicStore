@@ -207,7 +207,7 @@ export default {
   // Products management
   getProducts: async (req, res) => {
     try {
-      const products = await Product.findAll({ active: null }); // Get all products regardless of active status
+      const products = await Product.findAll({ active: null, includeImages: true }); // Get all products with all their images
       res.render('admin/products/list', {
         title: 'Product Management',
         currentUser: req.session.user,
@@ -247,7 +247,8 @@ export default {
         description,
         price,
         stock_quantity,
-        category_id
+        category_id,
+        extra_images
       } = req.body;
 
       // Basic validation
@@ -266,6 +267,15 @@ export default {
         return res.redirect('/admin/products/new');
       }
 
+      // uploaded files
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          imageUrls.push('/images/' + file.filename);
+        });
+      }
+
+      const mainImage = imageUrls.length > 0 ? imageUrls[0] : '/images/placeholder.webp';
+
       const productData = {
         name,
         slug: productSlug,
@@ -277,10 +287,14 @@ export default {
         category_id: parseInt(category_id),
         featured: req.body.featured === 'on',
         active: true,
-        image_url: '/images/placeholder.webp' // Default placeholder
+        image_url: mainImage,
+        extra_images: imageUrls.slice(1, 10)
       };
 
-      await Product.create(productData);
+      const newProduct = await Product.create(productData);
+      
+      // Sync images to product_images table
+      await Product.update(newProduct.id, { ...productData, image_url: mainImage });
 
       req.flash('success_msg', 'Product created successfully');
       res.redirect('/admin/products');
@@ -301,14 +315,19 @@ export default {
         return res.redirect('/admin/products');
       }
 
-      const categories = await Category.findAll();
+      const [categories, images] = await Promise.all([
+        Category.findAll(),
+        Product.getImages(id)
+      ]);
+
       res.render('admin/products/edit', {
         title: 'Edit Product',
         currentUser: req.session.user,
         sidebar: true,
         activePage: 'products',
         product,
-        categories
+        categories,
+        images
       });
     } catch (error) {
       console.error('Get edit product error:', error);
@@ -326,7 +345,8 @@ export default {
         description,
         price,
         stock_quantity,
-        category_id
+        category_id,
+        extra_images
       } = req.body;
 
       const existingProduct = await Product.findById(id);
@@ -334,6 +354,19 @@ export default {
         req.flash('error_msg', 'Product not found');
         return res.redirect('/admin/products');
       }
+
+      // Collect image URLs
+      const existingImages = await Product.getImages(id);
+      const imageUrls = existingImages.map(img => img.image_url);
+      
+      // Process uploaded files
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          imageUrls.push('/images/' + file.filename);
+        });
+      }
+
+      const mainImageObj = existingImages.find(img => img.is_main) || { image_url: imageUrls[0] || '/images/placeholder.webp' };
 
       const productData = {
         ...existingProduct,
@@ -345,7 +378,9 @@ export default {
         stock_quantity: parseInt(stock_quantity),
         category_id: parseInt(category_id),
         featured: req.body.featured === 'on',
-        active: req.body.active === 'on'
+        active: req.body.active === 'on',
+        image_url: mainImageObj.image_url,
+        extra_images: imageUrls.filter(url => url !== mainImageObj.image_url).slice(0, 9)
       };
 
       await Product.update(id, productData);
@@ -356,6 +391,32 @@ export default {
       console.error('Update product error:', error);
       req.flash('error_msg', 'Error updating product: ' + error.message);
       res.redirect(`/admin/products/${req.params.id}/edit`);
+    }
+  },
+
+  setMainImage: async (req, res) => {
+    try {
+      const { productId, imageId } = req.params;
+      await Product.setMainImage(productId, imageId);
+      req.flash('success_msg', 'Main image updated successfully');
+      res.redirect(`/admin/products/${productId}/edit`);
+    } catch (error) {
+      console.error('Set main image error:', error);
+      req.flash('error_msg', 'Error setting main image');
+      res.redirect(`/admin/products/${req.params.productId}/edit`);
+    }
+  },
+
+  deleteProductImage: async (req, res) => {
+    try {
+      const { productId, imageId } = req.params;
+      await Product.deleteImage(productId, imageId);
+      req.flash('success_msg', 'Image deleted successfully');
+      res.redirect(`/admin/products/${productId}/edit`);
+    } catch (error) {
+      console.error('Delete product image error:', error);
+      req.flash('error_msg', 'Error deleting image: ' + error.message);
+      res.redirect(`/admin/products/${req.params.productId}/edit`);
     }
   },
 

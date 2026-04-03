@@ -118,32 +118,11 @@ router.get('/:slug', async (req, res) => {
       }
     ];
 
-    // Get all product images (up to 10)
-    let images = [];
-    if (product.image_url) {
-      images.push(product.image_url);
-      
-      // Supported extensions for additional images
-      const commonExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
-      
-      // Check for additional images image-2.ext to image-10.ext
-      for (let i = 2; i <= 10; i++) {
-        // Find filename without extension of main image
-        const ext = path.extname(product.image_url);
-        const basePath = product.image_url.substring(0, product.image_url.length - ext.length);
-        
-        // Try each common extension for the current index
-        for (const possibleExt of commonExtensions) {
-          const nextImageUrl = `${basePath}-${i}${possibleExt}`;
-          const absolutePath = path.join(PUBLIC_DIR, nextImageUrl);
-          
-          if (fs.existsSync(absolutePath)) {
-            images.push(nextImageUrl);
-            break; // Found one for this index, move to next index
-          }
-        }
-      }
-    } else {
+    // Get all product images from database
+    const dbImages = await Product.getImages(product.id);
+    const images = dbImages.map(img => img.image_url);
+    
+    if (images.length === 0) {
       images.push('/images/product-placeholder.png');
     }
 

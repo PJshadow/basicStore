@@ -1,5 +1,6 @@
 import express from 'express';
 import adminController from '../controllers/adminController.js';
+import upload from '../middleware/upload.js';
 const router = express.Router();
 
 // Admin middleware - check if user is authenticated and is admin
@@ -35,11 +36,14 @@ router.get('/products', adminController.getProducts);
 
 router.get('/products/new', adminController.getCreateProduct);
 
-router.post('/products', adminController.createProduct);
+router.post('/products', upload.array('product_images', 10), adminController.createProduct);
 
 router.get('/products/:id/edit', adminController.getEditProduct);
 
-router.put('/products/:id', adminController.updateProduct);
+router.put('/products/:id', upload.array('product_images', 10), adminController.updateProduct);
+
+router.post('/products/:productId/images/:imageId/main', adminController.setMainImage);
+router.delete('/products/:productId/images/:imageId', adminController.deleteProductImage);
 
 router.delete('/products/:id', adminController.deleteProduct);
 

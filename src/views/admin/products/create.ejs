@@ -5,10 +5,10 @@
     </a>
 </div>
 
+<form action="/admin/products" method="POST" enctype="multipart/form-data">
 <div class="row">
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
-            <form action="/admin/products" method="POST">
                 <div class="mb-4">
                     <label for="name" class="form-label fw-bold">Product Name</label>
                     <input type="text" class="form-control bg-light py-3 border-0" id="name" name="name" placeholder="Enter product name" required>
@@ -63,25 +63,45 @@
                 
                 <div class="d-flex justify-content-end gap-3">
                     <button type="reset" class="btn btn-light rounded-pill px-5 border fw-bold">Reset</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Save Product</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                        <i class="fas fa-upload me-2"></i> Save and Upload
+                    </button>
                 </div>
-            </form>
         </div>
     </div>
     
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-            <h6 class="fw-bold mb-4">Product Image</h6>
-            <div class="placeholder-img rounded-4 mb-3" style="height: 250px;">
-                <i class="fas fa-cloud-arrow-up fa-3x opacity-25"></i>
+            <h6 class="fw-bold mb-4">Product Images</h6>
+            <div id="upload-container" class="mb-3">
+                <label class="form-label small fw-bold">Upload from Computer</label>
+                <input type="file" name="product_images" class="form-control border-0 bg-light mb-2" multiple accept="image/*" onchange="previewUploads(this)">
+                <div id="upload-preview" class="row g-2"></div>
             </div>
-            <div class="mb-3">
-                <input type="file" class="form-control border-0 bg-light" id="image">
-            </div>
-            <p class="text-muted small mb-0 text-center">
-                Click to upload or drag and drop. <br>Recommended size: 800x800px.
+            
+            <p class="text-muted x-small mt-2">
+                You can upload multiple files. Maximum 10 images total.
             </p>
         </div>
+
+        <script>
+            function previewUploads(input) {
+                const preview = document.getElementById('upload-preview');
+                preview.innerHTML = '';
+                if (input.files) {
+                    Array.from(input.files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.className = 'col-4';
+                            div.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded border">`;
+                            preview.appendChild(div);
+                        }
+                        reader.readAsDataURL(file);
+                    });
+                }
+            }
+        </script>
         
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-primary text-white">
             <h6 class="fw-bold mb-3"><i class="fas fa-lightbulb me-2"></i> Pro Tip</h6>
@@ -91,3 +111,4 @@
         </div>
     </div>
 </div>
+</form>

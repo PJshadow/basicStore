@@ -101,25 +101,125 @@ const createProductModel = () => {
       category_id,
       featured,
       active,
-      image_url
+      image_url,
+      extra_images = []
     } = productData;
     
-    const sql = `
-      UPDATE products 
-      SET name = ?, slug = ?, description = ?, short_description = ?, sku = ?, 
-          price = ?, sale_price = ?, cost = ?, stock_quantity = ?, low_stock_threshold = ?,
-          category_id = ?, featured = ?, active = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `;
-    
+    const connection = await promisePool.getConnection();
+    await connection.beginTransaction();
+
     try {
-      const [result] = await promisePool.execute(sql, [
+      const sql = `
+        UPDATE products 
+        SET name = ?, slug = ?, description = ?, short_description = ?, sku = ?, 
+            price = ?, sale_price = ?, cost = ?, stock_quantity = ?, low_stock_threshold = ?,
+            category_id = ?, featured = ?, active = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `;
+      
+      await connection.execute(sql, [
         name, slug, description, short_description, sku, price, sale_price, cost,
         stock_quantity, low_stock_threshold, category_id, featured, active, image_url, id
       ]);
-      return result.affectedRows > 0;
+
+      // Update extra images
+      if (Array.isArray(extra_images)) {
+        // Clear non-main images
+        await connection.execute('DELETE FROM product_images WHERE product_id = ? AND is_main = FALSE', [id]);
+        
+        // Add new extra images (limit to 9, since 1 is main, total 10)
+        const imagesToSave = extra_images.slice(0, 9);
+        for (const img of imagesToSave) {
+          if (img && img.trim()) {
+            await connection.execute('INSERT INTO product_images (product_id, image_url, is_main) VALUES (?, ?, FALSE)', [id, img.trim()]);
+          }
+        }
+      }
+
+      // Ensure main image is synced with product table
+      if (image_url) {
+        // Check if main image already in table
+        const [existing] = await connection.execute('SELECT id FROM product_images WHERE product_id = ? AND is_main = TRUE', [id]);
+        if (existing.length > 0) {
+          await connection.execute('UPDATE product_images SET image_url = ? WHERE product_id = ? AND is_main = TRUE', [image_url, id]);
+        } else {
+          await connection.execute('INSERT INTO product_images (product_id, image_url, is_main) VALUES (?, ?, TRUE)', [id, image_url]);
+        }
+      }
+
+      await connection.commit();
+      return true;
     } catch (error) {
+      await connection.rollback();
       throw new Error(`Error updating product: ${error.message}`);
+    } finally {
+      connection.release();
+    }
+  };
+
+  // Get product images
+  const getImages = async (productId) => {
+    const sql = 'SELECT * FROM product_images WHERE product_id = ? ORDER BY is_main DESC, created_at ASC';
+    try {
+      const [rows] = await promisePool.execute(sql, [productId]);
+      return rows;
+    } catch (error) {
+      throw new Error(`Error fetching product images: ${error.message}`);
+    }
+  };
+
+  // Set main image
+  const setMainImage = async (productId, imageId) => {
+    const connection = await promisePool.getConnection();
+    await connection.beginTransaction();
+    try {
+      // Unset all main images
+      await connection.execute('UPDATE product_images SET is_main = FALSE WHERE product_id = ?', [productId]);
+      // Set new main image
+      await connection.execute('UPDATE product_images SET is_main = TRUE WHERE id = ?', [imageId]);
+      
+      // Sync with product table
+      const [img] = await connection.execute('SELECT image_url FROM product_images WHERE id = ?', [imageId]);
+      if (img[0]) {
+        await connection.execute('UPDATE products SET image_url = ? WHERE id = ?', [img[0].image_url, productId]);
+      }
+      
+      await connection.commit();
+      return true;
+    } catch (error) {
+      await connection.rollback();
+      throw new Error(`Error setting main image: ${error.message}`);
+    } finally {
+      connection.release();
+    }
+  };
+
+  // Delete product image
+  const deleteImage = async (productId, imageId) => {
+    const connection = await promisePool.getConnection();
+    await connection.beginTransaction();
+    try {
+      // Get image info first
+      const [img] = await connection.execute('SELECT image_url, is_main FROM product_images WHERE id = ? AND product_id = ?', [imageId, productId]);
+      
+      if (!img[0]) {
+        throw new Error('Image not found');
+      }
+
+      if (img[0].is_main) {
+        throw new Error('Cannot delete the main image. Please set another image as main first.');
+      }
+
+      // Delete from database
+      await connection.execute('DELETE FROM product_images WHERE id = ?', [imageId]);
+      
+      await connection.commit();
+      return true;
+    } catch (error) {
+      await connection.rollback();
+      throw new Error(`Error deleting image: ${error.message}`);
+    } finally {
+      connection.release();
     }
   };
 
@@ -146,7 +246,8 @@ const createProductModel = () => {
     maxPrice = null,
     sortBy = 'created_at',
     sortOrder = 'DESC',
-    active = 1
+    active = 1,
+    includeImages = false
   } = {}) => {
     const offset = (page - 1) * limit;
     let sql = `
@@ -198,6 +299,13 @@ const createProductModel = () => {
     
     try {
       const [rows] = await promisePool.execute(sql, params);
+      
+      if (includeImages) {
+        for (const product of rows) {
+          product.images = await getImages(product.id);
+        }
+      }
+      
       return rows;
     } catch (error) {
       throw new Error(`Error finding all products: ${error.message}`);
@@ -351,7 +459,10 @@ const createProductModel = () => {
     getLowStock,
     getFeatured,
     getRelated,
-    getStatistics
+    getStatistics,
+    getImages,
+    setMainImage,
+    deleteImage
   };
 };
 

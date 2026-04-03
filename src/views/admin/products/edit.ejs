@@ -6,10 +6,10 @@
 </div>
 
 <% if (typeof product !== 'undefined' && product) { %>
+<form action="/admin/products/<%= product.id %>?_method=PUT" method="POST" enctype="multipart/form-data">
 <div class="row">
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
-            <form action="/admin/products/<%= product.id %>?_method=PUT" method="POST">
                 <div class="mb-4">
                     <label for="name" class="form-label fw-bold">Product Name</label>
                     <input type="text" class="form-control bg-light py-3 border-0" id="name" name="name" value="<%= product.name %>" required>
@@ -73,35 +73,93 @@
                 <hr class="my-5 opacity-10">
                 
                 <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold" onclick="document.getElementById('delete-form').submit()">Delete Product</button>
+                    <button type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold" onclick="if(confirm('Are you sure you want to delete this product?')) document.getElementById('delete-form').submit()">Delete Product</button>
                     <div class="d-flex gap-3">
                         <a href="/admin/products" class="btn btn-light rounded-pill px-4 border fw-bold">Cancel</a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Update Product</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i> Update and Upload
+                        </button>
                     </div>
                 </div>
-            </form>
-            
-            <form id="delete-form" action="/admin/products/<%= product.id %>?_method=DELETE" method="POST" class="d-none"></form>
         </div>
     </div>
     
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-            <h6 class="fw-bold mb-4">Product Image</h6>
-            <div class="placeholder-img rounded-4 mb-3" style="height: 250px;">
-                <% if (product.image_url) { %>
-                    <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
-                <% } else { %>
-                    <i class="fas fa-image fa-3x opacity-25"></i>
-                <% } %>
+            <h6 class="fw-bold mb-4">Product Images</h6>
+            
+            <% if (typeof images !== 'undefined' && images.length > 0) { %>
+                <div class="row g-2 mb-4">
+                    <% images.forEach(img => { %>
+                        <div class="col-6 position-relative">
+                            <div class="rounded-3 border overflow-hidden <%= img.is_main ? 'border-primary border-3' : '' %>" style="height: 100px;">
+                                <img src="<%= img.image_url %>" alt="Product image" class="img-fluid object-fit-cover w-100 h-100">
+                            </div>
+                            
+                            <div class="position-absolute top-0 start-0 m-1 d-flex gap-1">
+                                <% if (!img.is_main) { %>
+                                    <button type="button" class="btn btn-sm btn-primary rounded-circle shadow-sm p-1" title="Set as Main" onclick="setMainImage('<%= img.id %>')">
+                                        <i class="fas fa-star x-small"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger rounded-circle shadow-sm p-1" title="Delete Image" onclick="deleteImage('<%= img.id %>')">
+                                        <i class="fas fa-trash x-small"></i>
+                                    </button>
+                                <% } else { %>
+                                    <span class="badge bg-primary rounded-circle p-1 shadow-sm">
+                                        <i class="fas fa-check x-small"></i>
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+
+            <div id="upload-container" class="mb-3">
+                <label class="form-label small fw-bold">Upload from Computer</label>
+                <input type="file" name="product_images" class="form-control border-0 bg-light mb-2" multiple accept="image/*" onchange="previewUploads(this)">
+                <div id="upload-preview" class="row g-2"></div>
             </div>
-            <div class="mb-3">
-                <input type="file" class="form-control border-0 bg-light" id="image">
-            </div>
-            <p class="text-muted small mb-0 text-center">
-                Click to change image. <br>Recommended size: 800x800px.
-            </p>
+            
+            <p class="text-muted x-small mt-2">Maximum 10 images total. Uploads will be added to the gallery.</p>
         </div>
+        
+        <script>
+            function setMainImage(imageId) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/products/<%= product.id %>/images/${imageId}/main`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            function deleteImage(imageId) {
+                if (confirm('Are you sure you want to delete this image?')) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/products/<%= product.id %>/images/${imageId}?_method=DELETE`;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+
+            function previewUploads(input) {
+                const preview = document.getElementById('upload-preview');
+                preview.innerHTML = '';
+                if (input.files) {
+                    Array.from(input.files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.className = 'col-4';
+                            div.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded border">`;
+                            preview.appendChild(div);
+                        }
+                        reader.readAsDataURL(file);
+                    });
+                }
+            }
+        </script>
         
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
             <h6 class="fw-bold mb-3">Product Stats</h6>
@@ -120,6 +178,9 @@
         </div>
     </div>
 </div>
+</form>
+
+<form id="delete-form" action="/admin/products/<%= product.id %>?_method=DELETE" method="POST" class="d-none"></form>
 <% } else { %>
     <div class="alert alert-warning rounded-4 border-0 shadow-sm p-4">
         <i class="fas fa-exclamation-triangle me-2"></i> Product not found.

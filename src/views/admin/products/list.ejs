@@ -25,11 +25,20 @@
                             <tr>
                                 <td class="px-4 py-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-light rounded-3 overflow-hidden me-3" style="width: 48px; height: 48px;">
-                                            <% if (product.image_url) { %>
-                                                <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
+                                        <div class="d-flex bg-light rounded-3 overflow-hidden me-3 p-1" style="gap: 2px;">
+                                            <% if (product.images && product.images.length > 0) { %>
+                                                <% product.images.slice(0, 3).forEach(img => { %>
+                                                    <div style="width: 24px; height: 24px;">
+                                                        <img src="<%= img.image_url %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100 rounded-1 <%= img.is_main ? 'border border-primary' : '' %>">
+                                                    </div>
+                                                <% }) %>
+                                                <% if (product.images.length > 3) { %>
+                                                    <div class="small text-muted d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;">
+                                                        +<%= product.images.length - 3 %>
+                                                    </div>
+                                                <% } %>
                                             <% } else { %>
-                                                <div class="placeholder-img h-100 small d-flex align-items-center justify-content-center"><i class="fas fa-image"></i></div>
+                                                <div class="placeholder-img h-100 small d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;"><i class="fas fa-image"></i></div>
                                             <% } %>
                                         </div>
                                         <div class="fw-bold text-dark"><%= product.name %></div>
