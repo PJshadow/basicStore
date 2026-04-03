@@ -97,97 +97,137 @@
         </div>
         
         <div class="row g-4">
-            <!-- Product 1 -->
-            <div class="col-lg-3 col-md-6">
-                <div class="card h-100">
-                    <div class="card-img-top placeholder-img product-placeholder">
-                        <i class="fas fa-headphones fa-4x"></i>
+            <% if (typeof featuredProducts !== 'undefined' && featuredProducts.length > 0) { %>
+                <% featuredProducts.forEach(product => { %>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card h-100 border-0 shadow-sm transition-hover position-relative">
+                            <div class="card-img-top placeholder-img product-placeholder">
+                                <% if (product.image_url) { %>
+                                    <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
+                                <% } else { %>
+                                    <i class="fas fa-image fa-3x"></i>
+                                <% } %>
+                            </div>
+                            <div class="card-body">
+                                <span class="badge bg-primary-subtle text-primary mb-2"><%= product.category_name || 'General' %></span>
+                                <h5 class="card-title fw-bold">
+                                    <a href="/products/<%= product.slug %>" class="text-dark text-decoration-none stretched-link"><%= product.name %></a>
+                                </h5>
+                                <p class="card-text text-muted small"><%= product.short_description || (product.description ? product.description.substring(0, 50) + '...' : '') %></p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="h5 fw-bold text-primary mb-0">$<%= product.price %></span>
+                                    <button class="btn btn-primary btn-sm rounded-circle add-to-cart z-3 position-relative"
+                                            data-product-id="<%= product.id %>"
+                                            data-product-name="<%= product.name %>"
+                                            data-product-price="<%= product.price %>">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <span class="badge bg-primary-subtle text-primary mb-2">Electronics</span>
-                        <h5 class="card-title fw-bold">Wireless Headphones</h5>
-                        <p class="card-text text-muted small">Premium sound quality with noise cancellation</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="h5 fw-bold text-primary mb-0">$99.99</span>
-                            <button class="btn btn-primary btn-sm rounded-circle add-to-cart"
-                                    data-product-id="1"
-                                    data-product-name="Wireless Headphones"
-                                    data-product-price="99.99">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                <% }) %>
+            <% } else { %>
+                <!-- Fallback products if none in database (Product 1) -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm transition-hover position-relative">
+                        <div class="card-img-top placeholder-img product-placeholder">
+                            <i class="fas fa-headphones fa-4x"></i>
+                        </div>
+                        <div class="card-body">
+                            <span class="badge bg-primary-subtle text-primary mb-2">Electronics</span>
+                            <h5 class="card-title fw-bold">
+                                <a href="/products/wireless-headphones" class="text-dark text-decoration-none stretched-link">Wireless Headphones</a>
+                            </h5>
+                            <p class="card-text text-muted small">Premium sound quality with noise cancellation</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h5 fw-bold text-primary mb-0">$99.99</span>
+                                <button class="btn btn-primary btn-sm rounded-circle add-to-cart z-3 position-relative"
+                                        data-product-id="1"
+                                        data-product-name="Wireless Headphones"
+                                        data-product-price="99.99">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Product 2 -->
-            <div class="col-lg-3 col-md-6">
-                <div class="card h-100">
-                    <div class="card-img-top placeholder-img product-placeholder" style="background: linear-gradient(135deg, #0ea5e9 0%, #4f46e5 100%);">
-                        <i class="fas fa-stopwatch fa-4x"></i>
-                    </div>
-                    <div class="card-body">
-                        <span class="badge bg-primary-subtle text-primary mb-2">Gadgets</span>
-                        <h5 class="card-title fw-bold">Smart Watch</h5>
-                        <p class="card-text text-muted small">Track fitness, receive notifications</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="h5 fw-bold text-primary mb-0">$199.99</span>
-                            <button class="btn btn-primary btn-sm rounded-circle add-to-cart"
-                                    data-product-id="2"
-                                    data-product-name="Smart Watch"
-                                    data-product-price="199.99">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                
+                <!-- Product 2 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm transition-hover position-relative">
+                        <div class="card-img-top placeholder-img product-placeholder" style="background: linear-gradient(135deg, #0ea5e9 0%, #4f46e5 100%);">
+                            <i class="fas fa-stopwatch fa-4x"></i>
+                        </div>
+                        <div class="card-body">
+                            <span class="badge bg-primary-subtle text-primary mb-2">Gadgets</span>
+                            <h5 class="card-title fw-bold">
+                                <a href="/products/smart-watch" class="text-dark text-decoration-none stretched-link">Smart Watch</a>
+                            </h5>
+                            <p class="card-text text-muted small">Track fitness, receive notifications</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h5 fw-bold text-primary mb-0">$199.99</span>
+                                <button class="btn btn-primary btn-sm rounded-circle add-to-cart z-3 position-relative"
+                                        data-product-id="2"
+                                        data-product-name="Smart Watch"
+                                        data-product-price="199.99">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Product 3 -->
-            <div class="col-lg-3 col-md-6">
-                <div class="card h-100">
-                    <div class="card-img-top placeholder-img product-placeholder" style="background: linear-gradient(135deg, #10b981 0%, #4f46e5 100%);">
-                        <i class="fas fa-shopping-bag fa-4x"></i>
-                    </div>
-                    <div class="card-body">
-                        <span class="badge bg-primary-subtle text-primary mb-2">Fashion</span>
-                        <h5 class="card-title fw-bold">Leather Backpack</h5>
-                        <p class="card-text text-muted small">Durable water-resistant backpack</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="h5 fw-bold text-primary mb-0">$49.99</span>
-                            <button class="btn btn-primary btn-sm rounded-circle add-to-cart"
-                                    data-product-id="3"
-                                    data-product-name="Leather Backpack"
-                                    data-product-price="49.99">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                
+                <!-- Product 3 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm transition-hover position-relative">
+                        <div class="card-img-top placeholder-img product-placeholder" style="background: linear-gradient(135deg, #10b981 0%, #4f46e5 100%);">
+                            <i class="fas fa-shopping-bag fa-4x"></i>
+                        </div>
+                        <div class="card-body">
+                            <span class="badge bg-primary-subtle text-primary mb-2">Fashion</span>
+                            <h5 class="card-title fw-bold">
+                                <a href="/products/backpack" class="text-dark text-decoration-none stretched-link">Leather Backpack</a>
+                            </h5>
+                            <p class="card-text text-muted small">Durable water-resistant backpack</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h5 fw-bold text-primary mb-0">$49.99</span>
+                                <button class="btn btn-primary btn-sm rounded-circle add-to-cart z-3 position-relative"
+                                        data-product-id="3"
+                                        data-product-name="Leather Backpack"
+                                        data-product-price="49.99">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Product 4 -->
-            <div class="col-lg-3 col-md-6">
-                <div class="card h-100">
-                    <div class="card-img-top placeholder-img product-placeholder" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
-                        <i class="fas fa-coffee fa-4x"></i>
-                    </div>
-                    <div class="card-body">
-                        <span class="badge bg-primary-subtle text-primary mb-2">Home</span>
-                        <h5 class="card-title fw-bold">Coffee Maker</h5>
-                        <p class="card-text text-muted small">Programmable 12-cup coffee maker</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="h5 fw-bold text-primary mb-0">$79.99</span>
-                            <button class="btn btn-primary btn-sm rounded-circle add-to-cart"
-                                    data-product-id="4"
-                                    data-product-name="Coffee Maker"
-                                    data-product-price="79.99">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                
+                <!-- Product 4 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm transition-hover position-relative">
+                        <div class="card-img-top placeholder-img product-placeholder" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
+                            <i class="fas fa-coffee fa-4x"></i>
+                        </div>
+                        <div class="card-body">
+                            <span class="badge bg-primary-subtle text-primary mb-2">Home</span>
+                            <h5 class="card-title fw-bold">
+                                <a href="/products/coffee-maker" class="text-dark text-decoration-none stretched-link">Coffee Maker</a>
+                            </h5>
+                            <p class="card-text text-muted small">Programmable 12-cup coffee maker</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h5 fw-bold text-primary mb-0">$79.99</span>
+                                <button class="btn btn-primary btn-sm rounded-circle add-to-cart z-3 position-relative"
+                                        data-product-id="4"
+                                        data-product-name="Coffee Maker"
+                                        data-product-price="79.99">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            <% } %>
         </div>
     </div>
 </section>

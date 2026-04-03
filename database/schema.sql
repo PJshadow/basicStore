@@ -159,12 +159,12 @@ INSERT INTO categories (name, slug, description) VALUES
 ('Fashion', 'fashion', 'Clothing and accessories'),
 ('Home & Garden', 'home-garden', 'Home improvement and garden supplies'),
 ('Sports', 'sports', 'Sports equipment and gear')
-ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
+ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- Insert sample products
-INSERT INTO products (name, slug, description, short_description, price, category_id, stock_quantity, image_url) VALUES
-('Wireless Headphones', 'wireless-headphones', 'Premium sound quality with noise cancellation', 'Noise-cancelling wireless headphones', 99.99, 1, 50, 'https://via.placeholder.com/300x300/6c757d/ffffff?text=Headphones'),
-('Smart Watch', 'smart-watch', 'Track fitness, receive notifications', 'Fitness tracking smart watch', 199.99, 1, 30, 'https://via.placeholder.com/300x300/0dcaf0/ffffff?text=Smart+Watch'),
-('Backpack', 'backpack', 'Durable water-resistant backpack', 'Water-resistant travel backpack', 49.99, 2, 100, 'https://via.placeholder.com/300x300/198754/ffffff?text=Backpack'),
-('Coffee Maker', 'coffee-maker', 'Programmable 12-cup coffee maker', 'Automatic coffee maker', 79.99, 3, 25, 'https://via.placeholder.com/300x300/ffc107/ffffff?text=Coffee+Maker')
+INSERT INTO products (name, slug, description, short_description, price, category_id, stock_quantity, image_url, featured) VALUES
+('Wireless Headphones', 'wireless-headphones', 'Premium sound quality with noise cancellation', 'Noise-cancelling wireless headphones', 99.99, 1, 50, 'https://via.placeholder.com/300x300/6c757d/ffffff?text=Headphones', 1),
+('Smart Watch', 'smart-watch', 'Track fitness, receive notifications', 'Fitness tracking smart watch', 199.99, 1, 30, 'https://via.placeholder.com/300x300/0dcaf0/ffffff?text=Smart+Watch', 1),
+('Backpack', 'backpack', 'Durable water-resistant backpack', 'Water-resistant travel backpack', 49.99, 2, 100, 'https://via.placeholder.com/300x300/198754/ffffff?text=Backpack', 1),
+('Coffee Maker', 'coffee-maker', 'Programmable 12-cup coffee maker', 'Automatic coffee maker', 79.99, 3, 25, 'https://via.placeholder.com/300x300/ffc107/ffffff?text=Coffee+Maker', 1)
 ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;

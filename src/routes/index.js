@@ -1,12 +1,25 @@
 import express from 'express';
+import Product from '../models/Product.js';
+
 const router = express.Router();
 
 // Homepage route
-router.get('/', (req, res) => {
-  res.render('home/index', {
-    title: 'Home',
-    currentUser: req.session.user || null
-  });
+router.get('/', async (req, res) => {
+  try {
+    const featuredProducts = await Product.getFeatured(4);
+    res.render('home/index', {
+      title: 'Home',
+      featuredProducts,
+      currentUser: req.session.user || null
+    });
+  } catch (error) {
+    console.error('Error loading homepage:', error);
+    res.render('home/index', {
+      title: 'Home',
+      featuredProducts: [],
+      currentUser: req.session.user || null
+    });
+  }
 });
 
 // About page
