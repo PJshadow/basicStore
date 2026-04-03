@@ -64,7 +64,7 @@
             <div class="row g-3 align-items-center">
                 <div class="col-md-4">
                     <label class="form-label small fw-bold text-uppercase text-muted">Quantity</label>
-                    <select class="form-select border-0 shadow-sm">
+                    <select id="product-quantity" class="form-select border-0 shadow-sm">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -73,7 +73,11 @@
                     </select>
                 </div>
                 <div class="col-md-8 pt-md-4">
-                    <button class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm">
+                    <button class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm add-to-cart"
+                            data-product-id="<%= product.id %>"
+                            data-product-name="<%= product.name %>"
+                            data-product-price="<%= product.price %>"
+                            data-quantity-selector="#product-quantity">
                         <i class="fas fa-cart-plus me-2"></i> Add to Cart
                     </button>
                 </div>
