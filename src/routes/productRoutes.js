@@ -1,6 +1,13 @@
 import express from 'express';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PUBLIC_DIR = path.join(__dirname, '../public');
 
 const router = express.Router();
 
@@ -111,6 +118,35 @@ router.get('/:slug', async (req, res) => {
       }
     ];
 
+    // Get all product images (up to 10)
+    let images = [];
+    if (product.image_url) {
+      images.push(product.image_url);
+      
+      // Supported extensions for additional images
+      const commonExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+      
+      // Check for additional images image-2.ext to image-10.ext
+      for (let i = 2; i <= 10; i++) {
+        // Find filename without extension of main image
+        const ext = path.extname(product.image_url);
+        const basePath = product.image_url.substring(0, product.image_url.length - ext.length);
+        
+        // Try each common extension for the current index
+        for (const possibleExt of commonExtensions) {
+          const nextImageUrl = `${basePath}-${i}${possibleExt}`;
+          const absolutePath = path.join(PUBLIC_DIR, nextImageUrl);
+          
+          if (fs.existsSync(absolutePath)) {
+            images.push(nextImageUrl);
+            break; // Found one for this index, move to next index
+          }
+        }
+      }
+    } else {
+      images.push('/images/product-placeholder.png');
+    }
+
     res.render('home/product-detail', {
       title: product.name,
       product: {
@@ -126,13 +162,7 @@ router.get('/:slug', async (req, res) => {
           'Warranty': '1 year',
           'Shipping': 'Free shipping'
         },
-        images: product.image_url ? [
-          product.image_url,
-          product.image_url.replace('.png', '-2.png'),
-          product.image_url.replace('.png', '-3.png')
-        ] : [
-          '/images/product-placeholder.png'
-        ]
+        images
       },
       relatedProducts,
       reviews,

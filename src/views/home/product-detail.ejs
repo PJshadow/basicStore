@@ -1,34 +1,29 @@
 <div class="row g-5">
     <!-- Product Images -->
     <div class="col-lg-6">
-        <div class="card border-0 shadow-sm overflow-hidden rounded-4">
+        <div class="card border-0 shadow-sm overflow-hidden rounded-4 mb-3">
             <div class="placeholder-img product-placeholder bg-light" style="height: 500px;">
-                <% if (product.image_url) { %>
-                    <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
+                <% if (product.images && product.images.length > 0) { %>
+                    <img id="main-product-image" src="<%= product.images[0] %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
                 <% } else { %>
                     <i class="fas fa-image fa-5x"></i>
                 <% } %>
             </div>
         </div>
         
-        <!-- Thumbnail placeholders -->
-        <div class="row g-3 mt-3">
-            <div class="col-3">
-                <div class="ratio ratio-1x1 bg-white border rounded-3 overflow-hidden shadow-sm">
-                    <div class="d-flex align-items-center justify-content-center text-muted"><i class="fas fa-image"></i></div>
-                </div>
+        <!-- Thumbnails -->
+        <% if (product.images && product.images.length > 1) { %>
+            <div class="row g-3">
+                <% product.images.forEach((img, index) => { %>
+                    <div class="col-3 col-md-2">
+                        <div class="ratio ratio-1x1 bg-white border rounded-3 overflow-hidden shadow-sm cursor-pointer thumbnail-item <%= index === 0 ? 'border-primary border-2' : '' %>" 
+                             onclick="changeMainImage('<%= img %>', this)">
+                            <img src="<%= img %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
+                        </div>
+                    </div>
+                <% }) %>
             </div>
-            <div class="col-3">
-                <div class="ratio ratio-1x1 bg-white border rounded-3 overflow-hidden shadow-sm">
-                    <div class="d-flex align-items-center justify-content-center text-muted"><i class="fas fa-image"></i></div>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="ratio ratio-1x1 bg-white border rounded-3 overflow-hidden shadow-sm">
-                    <div class="d-flex align-items-center justify-content-center text-muted"><i class="fas fa-image"></i></div>
-                </div>
-            </div>
-        </div>
+        <% } %>
     </div>
     
     <!-- Product Info -->
@@ -110,6 +105,29 @@
         </div>
     </div>
 </div>
+
+<script>
+function changeMainImage(src, element) {
+    document.getElementById('main-product-image').src = src;
+    
+    // Update active border
+    const thumbnails = document.querySelectorAll('.thumbnail-item');
+    thumbnails.forEach(thumb => thumb.classList.remove('border-primary', 'border-2'));
+    element.classList.add('border-primary', 'border-2');
+}
+</script>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+}
+.thumbnail-item {
+    transition: all 0.2s;
+}
+.thumbnail-item:hover {
+    opacity: 0.8;
+}
+</style>
 
 <!-- Product Description Tabs -->
 <div class="mt-5 pt-5">
