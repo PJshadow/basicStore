@@ -41,6 +41,21 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="featured" name="featured" <%= product.featured ? 'checked' : '' %>>
+                            <label class="form-check-label fw-bold" for="featured">Featured Product</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="active" name="active" <%= product.active ? 'checked' : '' %>>
+                            <label class="form-check-label fw-bold" for="active">Active</label>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="mb-5">
                     <label for="category_id" class="form-label fw-bold">Category</label>

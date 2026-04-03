@@ -14,7 +14,7 @@ export default {
   getDashboardStats: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -60,7 +60,7 @@ export default {
   getAllUsers: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -94,7 +94,7 @@ export default {
   createAdminUser: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -128,7 +128,7 @@ export default {
   updateUserRole: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -173,7 +173,7 @@ export default {
   deleteUser: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -204,11 +204,185 @@ export default {
     }
   },
 
+  // Products management
+  getProducts: async (req, res) => {
+    try {
+      const products = await Product.findAll({ active: null }); // Get all products regardless of active status
+      res.render('admin/products/list', {
+        title: 'Product Management',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'products',
+        products
+      });
+    } catch (error) {
+      console.error('Get products error:', error);
+      req.flash('error_msg', 'Error fetching products');
+      res.redirect('/admin');
+    }
+  },
+
+  getCreateProduct: async (req, res) => {
+    try {
+      const categories = await Category.findAll();
+      res.render('admin/products/create', {
+        title: 'Add New Product',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'products',
+        categories
+      });
+    } catch (error) {
+      console.error('Get create product error:', error);
+      req.flash('error_msg', 'Error loading category list');
+      res.redirect('/admin/products');
+    }
+  },
+
+  createProduct: async (req, res) => {
+    try {
+      const {
+        name,
+        slug,
+        description,
+        price,
+        stock_quantity,
+        category_id
+      } = req.body;
+
+      // Basic validation
+      if (!name || !price || !stock_quantity || !category_id) {
+        req.flash('error_msg', 'Please fill in all required fields');
+        return res.redirect('/admin/products/new');
+      }
+
+      // Generate slug if not provided
+      const productSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+      // Check if slug already exists
+      const existingProduct = await Product.findBySlug(productSlug);
+      if (existingProduct) {
+        req.flash('error_msg', 'Product slug already exists. Please choose another or leave blank for auto-generation.');
+        return res.redirect('/admin/products/new');
+      }
+
+      const productData = {
+        name,
+        slug: productSlug,
+        description,
+        short_description: description ? description.substring(0, 150) : '',
+        sku: 'SKU-' + Date.now(), // Basic SKU generation
+        price: parseFloat(price),
+        stock_quantity: parseInt(stock_quantity),
+        category_id: parseInt(category_id),
+        featured: req.body.featured === 'on',
+        active: true,
+        image_url: '/images/placeholder.webp' // Default placeholder
+      };
+
+      await Product.create(productData);
+
+      req.flash('success_msg', 'Product created successfully');
+      res.redirect('/admin/products');
+    } catch (error) {
+      console.error('Create product error:', error);
+      req.flash('error_msg', 'Error creating product: ' + error.message);
+      res.redirect('/admin/products/new');
+    }
+  },
+
+  getEditProduct: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const product = await Product.findById(id);
+      
+      if (!product) {
+        req.flash('error_msg', 'Product not found');
+        return res.redirect('/admin/products');
+      }
+
+      const categories = await Category.findAll();
+      res.render('admin/products/edit', {
+        title: 'Edit Product',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'products',
+        product,
+        categories
+      });
+    } catch (error) {
+      console.error('Get edit product error:', error);
+      req.flash('error_msg', 'Error loading product data');
+      res.redirect('/admin/products');
+    }
+  },
+
+  updateProduct: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const {
+        name,
+        slug,
+        description,
+        price,
+        stock_quantity,
+        category_id
+      } = req.body;
+
+      const existingProduct = await Product.findById(id);
+      if (!existingProduct) {
+        req.flash('error_msg', 'Product not found');
+        return res.redirect('/admin/products');
+      }
+
+      const productData = {
+        ...existingProduct,
+        name,
+        slug,
+        description,
+        short_description: description ? description.substring(0, 150) : '',
+        price: parseFloat(price),
+        stock_quantity: parseInt(stock_quantity),
+        category_id: parseInt(category_id),
+        featured: req.body.featured === 'on',
+        active: req.body.active === 'on'
+      };
+
+      await Product.update(id, productData);
+
+      req.flash('success_msg', 'Product updated successfully');
+      res.redirect('/admin/products');
+    } catch (error) {
+      console.error('Update product error:', error);
+      req.flash('error_msg', 'Error updating product: ' + error.message);
+      res.redirect(`/admin/products/${req.params.id}/edit`);
+    }
+  },
+
+  deleteProduct: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await Product.delete(id);
+      
+      if (deleted) {
+        req.flash('success_msg', 'Product deleted successfully');
+      } else {
+        req.flash('error_msg', 'Product not found or could not be deleted');
+      }
+      
+      res.redirect('/admin/products');
+    } catch (error) {
+      console.error('Delete product error:', error);
+      req.flash('error_msg', 'Error deleting product');
+      res.redirect('/admin/products');
+    }
+  },
+
   // Get system logs (placeholder - would integrate with logger)
   getSystemLogs: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -244,7 +418,7 @@ export default {
   getLowStockAlerts: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -271,7 +445,7 @@ export default {
   getPendingOrdersCount: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 

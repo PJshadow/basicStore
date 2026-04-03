@@ -1,37 +1,8 @@
-<% layout('layouts/main') -%>
-
 <% 
-block('title', 'Admin Dashboard');
-const sidebar = true;
-const activePage = 'dashboard';
--%>
+// Admin Dashboard
+%>
 
-<% block('styles', `
-    <style>
-        .stat-card {
-            border-radius: 10px;
-            transition: transform 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        .stat-icon {
-            font-size: 2.5rem;
-            opacity: 0.8;
-        }
-        .recent-orders-table {
-            font-size: 0.9rem;
-        }
-        .order-status-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-        .chart-container {
-            height: 300px;
-            position: relative;
-        }
-    </style>
-`) -%>
+
 
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -342,12 +313,3 @@ const activePage = 'dashboard';
     </div>
 </div>
 
-<% block('scripts', `
-    <script>
-        // Dashboard initialization
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Admin dashboard loaded');
-            // Initialize charts here
-        });
-    </script>
-`) -%>

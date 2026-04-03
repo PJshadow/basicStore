@@ -145,17 +145,23 @@ const createProductModel = () => {
     minPrice = null,
     maxPrice = null,
     sortBy = 'created_at',
-    sortOrder = 'DESC'
+    sortOrder = 'DESC',
+    active = 1
   } = {}) => {
     const offset = (page - 1) * limit;
     let sql = `
       SELECT p.*, c.name as category_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.active = 1
+      WHERE 1=1
     `;
     
     const params = [];
+
+    if (active !== null) {
+      sql += ' AND p.active = ?';
+      params.push(active ? 1 : 0);
+    }
     
     if (categoryId) {
       sql += ' AND p.category_id = ?';
@@ -204,10 +210,16 @@ const createProductModel = () => {
     featured = null,
     search = '',
     minPrice = null,
-    maxPrice = null
+    maxPrice = null,
+    active = 1
   } = {}) => {
-    let sql = 'SELECT COUNT(*) as total FROM products WHERE active = 1';
+    let sql = 'SELECT COUNT(*) as total FROM products WHERE 1=1';
     const params = [];
+
+    if (active !== null) {
+      sql += ' AND active = ?';
+      params.push(active ? 1 : 0);
+    }
     
     if (categoryId) {
       sql += ' AND category_id = ?';

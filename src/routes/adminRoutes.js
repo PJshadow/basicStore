@@ -1,4 +1,5 @@
 import express from 'express';
+import adminController from '../controllers/adminController.js';
 const router = express.Router();
 
 // Admin middleware - check if user is authenticated and is admin
@@ -30,33 +31,17 @@ router.get('/', (req, res) => {
 });
 
 // Products management
-router.get('/products', (req, res) => {
-  res.render('admin/products/list', {
-    title: 'Product Management',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'products'
-  });
-});
+router.get('/products', adminController.getProducts);
 
-router.get('/products/new', (req, res) => {
-  res.render('admin/products/create', {
-    title: 'Add New Product',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'products'
-  });
-});
+router.get('/products/new', adminController.getCreateProduct);
 
-router.get('/products/:id/edit', (req, res) => {
-  res.render('admin/products/edit', {
-    title: 'Edit Product',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'products',
-    productId: req.params.id
-  });
-});
+router.post('/products', adminController.createProduct);
+
+router.get('/products/:id/edit', adminController.getEditProduct);
+
+router.put('/products/:id', adminController.updateProduct);
+
+router.delete('/products/:id', adminController.deleteProduct);
 
 // Categories management
 router.get('/categories', (req, res) => {

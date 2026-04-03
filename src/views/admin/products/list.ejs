@@ -26,7 +26,11 @@
                                 <td class="px-4 py-3">
                                     <div class="d-flex align-items-center">
                                         <div class="bg-light rounded-3 overflow-hidden me-3" style="width: 48px; height: 48px;">
-                                            <div class="placeholder-img h-100 small"><i class="fas fa-image"></i></div>
+                                            <% if (product.image_url) { %>
+                                                <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
+                                            <% } else { %>
+                                                <div class="placeholder-img h-100 small d-flex align-items-center justify-content-center"><i class="fas fa-image"></i></div>
+                                            <% } %>
                                         </div>
                                         <div class="fw-bold text-dark"><%= product.name %></div>
                                     </div>
@@ -41,7 +45,11 @@
                                     <% } %>
                                 </td>
                                 <td class="py-3">
-                                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill small">Active</span>
+                                    <% if (product.active) { %>
+                                        <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill small">Active</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill small">Inactive</span>
+                                    <% } %>
                                 </td>
                                 <td class="px-4 py-3 text-end">
                                     <div class="btn-group">
