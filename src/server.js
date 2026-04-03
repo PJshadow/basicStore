@@ -1,4 +1,5 @@
 import app from './app.js';
+import { startWebpConversionTask } from './utils/webpConverter.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,6 +13,9 @@ const server = app.listen(PORT, () => {
   ✅ URL: http://localhost:${PORT}
   ===========================================
   `);
+  
+  // Start the background task for WebP conversion
+  startWebpConversionTask();
 });
 
 // Handle unhandled promise rejections

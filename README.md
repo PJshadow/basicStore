@@ -11,6 +11,7 @@ A scalable, maintainable e-commerce platform built with Node.js, Express, EJS, a
 - **MySQL Database**: Robust data storage with proper relationships
 - **Email Integration**: Nodemailer for order notifications
 - **Security**: Helmet.js, bcrypt password hashing, express-session
+- **Image Optimization**: Automated background task for WebP image conversion and link synchronization
 
 ## 📁 Project Structure
 
@@ -150,6 +151,18 @@ npm run test:watch
 - CSRF protection
 - Helmet.js security headers
 - Input validation with express-validator
+
+## 🖼️ Image Optimization System
+
+The platform includes an automated system to ensure all product images are served in the modern WebP format for better performance.
+
+- **Automated Detection**: A background task periodically scans the `src/public` directory for `.png`, `.jpg`, and `.jpeg` files.
+- **WebP Conversion**: Uses the `sharp` library to convert non-WebP images to optimized `.webp` format.
+- **Global Link Sync**: Automatically updates all links to the new `.webp` format in:
+  - **Database**: Scans every column of every table to replace old paths.
+  - **Source Code**: Updates paths in `.ejs`, `.css`, `.js`, and `.html` files.
+- **Configuration**: Controlled by `WEBP_CONVERSION_INTERVAL` in the `.env` file (milliseconds).
+- **Cleanup**: Removes original files after successful conversion to save disk space.
 
 ## 🤝 Contributing
 
