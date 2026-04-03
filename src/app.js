@@ -87,6 +87,8 @@ app.use((req, res, next) => {
 });
 
 // View engine setup
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -94,6 +96,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.use((req, res, next) => {
   res.locals.appName = process.env.APP_NAME || 'BasicStore';
   res.locals.currentYear = new Date().getFullYear();
+  res.locals.title = '';
+  res.locals.styles = '';
+  res.locals.scripts = '';
+  res.locals.sidebar = false;
   next();
 });
 

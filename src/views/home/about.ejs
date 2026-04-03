@@ -1,292 +1,194 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - <%= appName %></title>
+<style>
+    .hero-about {
+        background: linear-gradient(rgba(79, 70, 229, 0.85), rgba(79, 70, 229, 0.85)), url('/images/hero-bg.webp');
+        background-size: cover;
+        background-position: center;
+        color: #fff;
+        padding: 6rem 0;
+        margin-top: -1.5rem;
+        border-radius: 0 0 2rem 2rem;
+    }
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/style.css">
+    .value-icon {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+    }
 
-    <style>
-        .hero-about {
-            background: linear-gradient(rgba(13, 110, 253, 0.85), rgba(13, 110, 253, 0.85)), url('/images/hero-bg.webp');
-            background-size: cover;
-            background-position: center;
-            color: #fff;
-            padding: 100px 0;
-        }
+    .stat-card {
+        border-radius: 1rem;
+        background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
+        color: #fff;
+        padding: 2.5rem;
+        height: 100%;
+        border: none;
+    }
 
-        .value-icon {
-            font-size: 2.5rem;
-            color: #0d6efd;
-        }
+    .team-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--light-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--primary-color);
+        border: 3px solid var(--border-color);
+    }
+</style>
 
-        .stat-card {
-            border-radius: 16px;
-            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
-            color: #fff;
-            padding: 2.5rem;
-            height: 100%;
-        }
+<section class="hero-about text-center mb-5">
+    <div class="container">
+        <span class="badge bg-white text-primary mb-3 px-3 py-2 rounded-pill fw-bold">Who We Are</span>
+        <h1 class="display-4 fw-bold">Built to Elevate Everyday Shopping</h1>
+        <p class="lead mx-auto opacity-90" style="max-width: 720px;">
+            Since day one, <%= appName %> has been focused on curating high-quality products, delivering delightful
+            experiences, and supporting the communities that trust us.
+        </p>
+    </div>
+</section>
 
-        .team-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #f8f9fa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #0d6efd;
-            border: 3px solid #e9ecef;
-        }
-    </style>
-</head>
-<body>
-    <%- include('../partials/header') %>
-
-    <section class="hero-about text-center">
-        <div class="container">
-            <span class="badge bg-light text-primary mb-3">Who We Are</span>
-            <h1 class="display-4 fw-bold">Built to Elevate Everyday Shopping</h1>
-            <p class="lead mx-auto" style="max-width: 720px;">
-                Since day one, <%= appName %> has been focused on curating high-quality products, delivering delightful
-                experiences, and supporting the communities that trust us.
+<!-- Our Story -->
+<section class="mb-5 py-4">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+            <h2 class="section-title">Our Story</h2>
+            <p class="text-muted mb-4">
+                What started as a small marketplace among friends has grown into a complete commerce experience. We
+                set out to remove friction from online shopping—simplifying discovery, improving transparency, and
+                ensuring customer satisfaction at every step.
+            </p>
+            <p class="text-muted">
+                Today, our catalog spans hundreds of carefully vetted brands. We partner with local artisans and
+                trusted manufacturers to bring you products that stand the test of time, all backed by responsive
+                support and flexible fulfillment options.
             </p>
         </div>
-    </section>
-
-    <main class="py-5">
-        <div class="container">
-            <!-- Our Story -->
-            <div class="row align-items-center mb-5">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                    <h2 class="fw-semibold mb-3">Our Story</h2>
-                    <p class="text-muted mb-3">
-                        What started as a small marketplace among friends has grown into a complete commerce experience. We
-                        set out to remove friction from online shopping—simplifying discovery, improving transparency, and
-                        ensuring customer satisfaction at every step.
-                    </p>
-                    <p class="text-muted">
-                        Today, our catalog spans hundreds of carefully vetted brands. We partner with local artisans and
-                        trusted manufacturers to bring you products that stand the test of time, all backed by responsive
-                        support and flexible fulfillment options.
-                    </p>
-                </div>
-                <div class="col-lg-6">
-                    <div class="row g-4">
-                        <div class="col-sm-6">
-                            <div class="stat-card text-center">
-                                <h3 class="display-6 fw-bold mb-1">50K+</h3>
-                                <p class="mb-0">Orders Delivered</p>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="stat-card text-center" style="background: linear-gradient(135deg, #20c997 0%, #0d6efd 100%);">
-                                <h3 class="display-6 fw-bold mb-1">4.9/5</h3>
-                                <p class="mb-0">Average Rating</p>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="stat-card text-center" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
-                                <h3 class="display-6 fw-bold mb-1">98%</h3>
-                                <p class="mb-0">On-Time Delivery</p>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="stat-card text-center" style="background: linear-gradient(135deg, #6610f2 0%, #6f42c1 100%);">
-                                <h3 class="display-6 fw-bold mb-1">120+</h3>
-                                <p class="mb-0">Global Suppliers</p>
-                            </div>
-                        </div>
+        <div class="col-lg-6">
+            <div class="row g-4">
+                <div class="col-sm-6">
+                    <div class="card stat-card text-center">
+                        <h3 class="display-6 fw-bold mb-1">50K+</h3>
+                        <p class="mb-0 opacity-75">Orders Delivered</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Core Values -->
-            <div class="row mb-5">
-                <div class="col-12 text-center mb-4">
-                    <h2 class="fw-semibold">Our Core Values</h2>
-                    <p class="text-muted">The principles that guide every decision we make.</p>
-                </div>
-
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body text-center p-4">
-                            <div class="value-icon mb-3">
-                                <i class="fas fa-handshake"></i>
-                            </div>
-                            <h5 class="fw-semibold mb-2">Customer Obsession</h5>
-                            <p class="text-muted mb-0">
-                                We design every service with your needs first—prioritizing transparency, speed, and trust.
-                            </p>
-                        </div>
+                <div class="col-sm-6">
+                    <div class="card stat-card text-center" style="background: linear-gradient(135deg, var(--success-color) 0%, var(--primary-color) 100%);">
+                        <h3 class="display-6 fw-bold mb-1">4.9/5</h3>
+                        <p class="mb-0 opacity-75">Average Rating</p>
                     </div>
                 </div>
-
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body text-center p-4">
-                            <div class="value-icon mb-3">
-                                <i class="fas fa-seedling"></i>
-                            </div>
-                            <h5 class="fw-semibold mb-2">Sustainable Growth</h5>
-                            <p class="text-muted mb-0">
-                                From packaging to partnerships, we invest in responsible solutions that minimize impact.
-                            </p>
-                        </div>
+                <div class="col-sm-6">
+                    <div class="card stat-card text-center" style="background: linear-gradient(135deg, var(--warning-color) 0%, #f59e0b 100%);">
+                        <h3 class="display-6 fw-bold mb-1">98%</h3>
+                        <p class="mb-0 opacity-75">On-Time Delivery</p>
                     </div>
                 </div>
-
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body text-center p-4">
-                            <div class="value-icon mb-3">
-                                <i class="fas fa-lightbulb"></i>
-                            </div>
-                            <h5 class="fw-semibold mb-2">Relentless Innovation</h5>
-                            <p class="text-muted mb-0">
-                                We continuously experiment with tools, logistics, and personalization to improve your journey.
-                            </p>
-                        </div>
+                <div class="col-sm-6">
+                    <div class="card stat-card text-center" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+                        <h3 class="display-6 fw-bold mb-1">120+</h3>
+                        <p class="mb-0 opacity-75">Global Suppliers</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Why Shop With Us -->
-            <div class="row mb-5">
-                <div class="col-12 text-center mb-4">
-                    <h2 class="fw-semibold">Why Shop With <%= appName %>?</h2>
-                    <p class="text-muted">Everything we do is designed to delight.</p>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <div class="me-3 text-primary">
-                            <i class="fas fa-shipping-fast fa-2x"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-semibold">Fast, Reliable Fulfillment</h5>
-                            <p class="text-muted mb-0">
-                                Regionally distributed warehouses and predictive inventory ensure your order arrives on time, every time.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <div class="me-3 text-primary">
-                            <i class="fas fa-tags fa-2x"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-semibold">Curated, Fair Pricing</h5>
-                            <p class="text-muted mb-0">
-                                We collaborate with brand partners to secure exclusive collections and pricing you won’t find elsewhere.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <div class="me-3 text-primary">
-                            <i class="fas fa-headset fa-2x"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-semibold">Human Support, 24/7</h5>
-                            <p class="text-muted mb-0">
-                                Our specialists are available around the clock to answer questions, manage returns, and celebrate your wins.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <div class="me-3 text-primary">
-                            <i class="fas fa-lock fa-2x"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-semibold">Security You Can Trust</h5>
-                            <p class="text-muted mb-0">
-                                Enterprise-grade encryption, fraud protection, and transparent privacy controls keep your data safe.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Leadership Team -->
-            <div class="row mb-5">
-                <div class="col-12 text-center mb-4">
-                    <h2 class="fw-semibold">Meet the Leadership</h2>
-                    <p class="text-muted">Experts in commerce, logistics, and customer experience.</p>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 border-0 shadow-sm text-center p-4">
-                        <div class="team-avatar mx-auto mb-3">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <h5 class="fw-semibold mb-1">Alex Morgan</h5>
-                        <p class="text-primary mb-2">Founder & CEO</p>
-                        <p class="text-muted mb-0">
-                            Visionary operator focused on building long-term partnerships with suppliers and communities.
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 border-0 shadow-sm text-center p-4">
-                        <div class="team-avatar mx-auto mb-3">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h5 class="fw-semibold mb-1">Priya Shah</h5>
-                        <p class="text-primary mb-2">Chief Operations Officer</p>
-                        <p class="text-muted mb-0">
-                            Leads logistics innovation and operational excellence to keep fulfillment fast and predictable.
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 border-0 shadow-sm text-center p-4">
-                        <div class="team-avatar mx-auto mb-3">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                        <h5 class="fw-semibold mb-1">Gabriel Costa</h5>
-                        <p class="text-primary mb-2">Head of Customer Experience</p>
-                        <p class="text-muted mb-0">
-                            Champions user feedback loops, loyalty programs, and support training across the globe.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Call to Action -->
-            <div class="bg-light rounded-4 p-5 text-center">
-                <h2 class="fw-semibold mb-3">Join Our Community</h2>
-                <p class="text-muted mx-auto" style="max-width: 640px;">
-                    Stay up to date with product drops, limited-time offers, and exclusive access to events. Subscribe to our
-                    newsletter and be part of the <%= appName %> story.
-                </p>
-                <form class="row g-2 justify-content-center" action="/newsletter" method="POST">
-                    <div class="col-md-4">
-                        <input type="email" name="email" class="form-control form-control-lg" placeholder="you@example.com" required>
-                    </div>
-                    <div class="col-md-2 d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">Subscribe</button>
-                    </div>
-                </form>
             </div>
         </div>
-    </main>
+    </div>
+</section>
 
-    <%- include('../partials/footer') %>
+<!-- Core Values -->
+<section class="mb-5 py-5">
+    <div class="text-center mb-5">
+        <h2 class="section-title d-inline-block">Our Core Values</h2>
+        <p class="text-muted mt-2">The principles that guide every decision we make.</p>
+    </div>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="/js/main.js"></script>
-</body>
-</html>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white p-4">
+                <div class="card-body text-center">
+                    <div class="value-icon mb-4">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Customer Obsession</h5>
+                    <p class="text-muted mb-0">
+                        We design every service with your needs first—prioritizing transparency, speed, and trust.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white p-4">
+                <div class="card-body text-center">
+                    <div class="value-icon mb-4">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Sustainable Growth</h5>
+                    <p class="text-muted mb-0">
+                        From packaging to partnerships, we invest in responsible solutions that minimize impact.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white p-4">
+                <div class="card-body text-center">
+                    <div class="value-icon mb-4">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Relentless Innovation</h5>
+                    <p class="text-muted mb-0">
+                        We continuously experiment with tools, logistics, and personalization to improve your journey.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Leadership Team -->
+<section class="mb-5 pb-5">
+    <div class="text-center mb-5">
+        <h2 class="section-title d-inline-block">Meet the Leadership</h2>
+        <p class="text-muted mt-2">Experts in commerce, logistics, and customer experience.</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white text-center p-4">
+                <div class="team-avatar mx-auto mb-4">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h5 class="fw-bold mb-1">Alex Morgan</h5>
+                <p class="text-primary fw-semibold mb-3">Founder & CEO</p>
+                <p class="text-muted mb-0 small">
+                    Visionary operator focused on building long-term partnerships with suppliers and communities.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white text-center p-4">
+                <div class="team-avatar mx-auto mb-4">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h5 class="fw-bold mb-1">Priya Shah</h5>
+                <p class="text-primary fw-semibold mb-3">Chief Operations Officer</p>
+                <p class="text-muted mb-0 small">
+                    Leads logistics innovation and operational excellence to keep fulfillment fast and predictable.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white text-center p-4">
+                <div class="team-avatar mx-auto mb-4">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h5 class="fw-bold mb-1">Gabriel Costa</h5>
+                <p class="text-primary fw-semibold mb-3">Head of Customer Experience</p>
+                <p class="text-muted mb-0 small">
+                    Champions user feedback loops, loyalty programs, and support training across the globe.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,509 +1,112 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product - Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-        .image-preview img {
-            max-width: 100%;
-            max-height: 180px;
-        }
-        .existing-image {
-            position: relative;
-            margin-bottom: 15px;
-        }
-        .existing-image img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .existing-image .btn-remove {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tab-content {
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-        }
-        .nav-tabs .nav-link.active {
-            background-color: #fff;
-            border-bottom-color: #fff;
-        }
-    </style>
-</head>
-<body>
-    <%- include('../layouts/main') %>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Edit Product</h2>
+    <a href="/admin/products" class="btn btn-light rounded-pill border px-4">
+        <i class="fas fa-arrow-left me-2"></i> Back to List
+    </a>
+</div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <%- include('../partials/sidebar') %>
-            
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Edit Product</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="/admin/products" class="btn btn-sm btn-outline-secondary me-2">
-                            <i class="bi bi-arrow-left"></i> Back to Products
-                        </a>
-                        <a href="/products/<%= product.slug %>" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-eye"></i> View Product
-                        </a>
+<% if (typeof product !== 'undefined' && product) { %>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+            <form action="/admin/products/<%= product.id %>?_method=PUT" method="POST">
+                <div class="mb-4">
+                    <label for="name" class="form-label fw-bold">Product Name</label>
+                    <input type="text" class="form-control bg-light py-3 border-0" id="name" name="name" value="<%= product.name %>" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="slug" class="form-label fw-bold">Slug (URL)</label>
+                    <input type="text" class="form-control bg-light py-2 border-0" id="slug" name="slug" value="<%= product.slug %>" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-bold">Description</label>
+                    <textarea class="form-control bg-light border-0" id="description" name="description" rows="5"><%= product.description %></textarea>
+                </div>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label for="price" class="form-label fw-bold">Price ($)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-dollar-sign small"></i></span>
+                            <input type="number" step="0.01" class="form-control bg-light border-0 py-2" id="price" name="price" value="<%= product.price %>" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="stock_quantity" class="form-label fw-bold">Stock Quantity</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-boxes-stacked small"></i></span>
+                            <input type="number" class="form-control bg-light border-0 py-2" id="stock_quantity" name="stock_quantity" value="<%= product.stock_quantity %>" required>
+                        </div>
                     </div>
                 </div>
-
-                <% if (messages.error) { %>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <%= messages.error %>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                
+                <div class="mb-5">
+                    <label for="category_id" class="form-label fw-bold">Category</label>
+                    <select class="form-select bg-light border-0 py-2" id="category_id" name="category_id" required>
+                        <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+                            <% categories.forEach(category => { %>
+                                <option value="<%= category.id %>" <%= product.category_id === category.id ? 'selected' : '' %>>
+                                    <%= category.name %>
+                                </option>
+                            <% }) %>
+                        <% } %>
+                    </select>
+                </div>
+                
+                <hr class="my-5 opacity-10">
+                
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold" onclick="document.getElementById('delete-form').submit()">Delete Product</button>
+                    <div class="d-flex gap-3">
+                        <a href="/admin/products" class="btn btn-light rounded-pill px-4 border fw-bold">Cancel</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Update Product</button>
                     </div>
-                <% } %>
-                <% if (messages.success) { %>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <%= messages.success %>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <% } %>
-
-                <form action="/admin/products/<%= product.id %>" method="POST" enctype="multipart/form-data" id="productForm">
-                    <input type="hidden" name="_method" value="PUT">
-                    
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Product Information</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="name" class="form-label">Product Name *</label>
-                                        <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
-                                    </div>
-
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="sku" class="form-label">SKU *</label>
-                                            <input type="text" class="form-control" id="sku" name="sku" value="<%= product.sku %>" required>
-                                            <div class="form-text">Unique stock keeping unit</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="slug" class="form-label">URL Slug</label>
-                                            <input type="text" class="form-control" id="slug" name="slug" value="<%= product.slug %>">
-                                            <div class="form-text">Leave empty to auto-generate from name</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">Description</label>
-                                        <textarea class="form-control" id="description" name="description" rows="4"><%= product.description || '' %></textarea>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="shortDescription" class="form-label">Short Description</label>
-                                        <textarea class="form-control" id="shortDescription" name="shortDescription" rows="2" maxlength="255"><%= product.shortDescription || '' %></textarea>
-                                        <div class="form-text">Brief summary for product listings (max 255 chars)</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Pricing & Inventory</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="price" class="form-label">Price *</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">$</span>
-                                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" value="<%= product.price %>" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="comparePrice" class="form-label">Compare at Price</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">$</span>
-                                                <input type="number" class="form-control" id="comparePrice" name="comparePrice" step="0.01" min="0" value="<%= product.comparePrice || '' %>">
-                                            </div>
-                                            <div class="form-text">Original price for showing discount</div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="cost" class="form-label">Cost</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">$</span>
-                                                <input type="number" class="form-control" id="cost" name="cost" step="0.01" min="0" value="<%= product.cost || '' %>">
-                                            </div>
-                                            <div class="form-text">Your cost for profit calculation</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="stock" class="form-label">Stock Quantity *</label>
-                                            <input type="number" class="form-control" id="stock" name="stock" min="0" value="<%= product.stock %>" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="lowStockThreshold" class="form-label">Low Stock Threshold</label>
-                                            <input type="number" class="form-control" id="lowStockThreshold" name="lowStockThreshold" min="1" value="<%= product.lowStockThreshold || 5 %>">
-                                            <div class="form-text">Alert when stock falls below this number</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="trackInventory" name="trackInventory" <%= product.trackInventory ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="trackInventory">
-                                                Track inventory
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="allowBackorders" name="allowBackorders" <%= product.allowBackorders ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="allowBackorders">
-                                                Allow backorders when out of stock
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Images</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="mainImage" class="form-label">Main Product Image</label>
-                                        <input type="file" class="form-control" id="mainImage" name="mainImage" accept="image/*">
-                                        <div class="form-text">Leave empty to keep current image</div>
-                                        
-                                        <% if (product.image_url) { %>
-                                            <div class="mt-3">
-                                                <p class="mb-2">Current Image:</p>
-                                                <div class="existing-image">
-                                                    <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-fluid rounded" style="max-width: 200px;">
-                                                    <button type="button" class="btn btn-danger btn-sm btn-remove" onclick="removeMainImage()">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                                <input type="hidden" id="removeMainImage" name="removeMainImage" value="0">
-                                            </div>
-                                        <% } else { %>
-                                            <div class="image-preview mt-2" id="mainImagePreview">
-                                                <div class="text-muted text-center py-5">No image selected</div>
-                                            </div>
-                                        <% } %>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="additionalImages" class="form-label">Additional Images</label>
-                                        <input type="file" class="form-control" id="additionalImages" name="additionalImages[]" accept="image/*" multiple>
-                                        <div class="form-text">Hold Ctrl to select multiple images</div>
-                                        
-                                        <% if (product.images && product.images.length > 0) { %>
-                                            <div class="row mt-3">
-                                                <div class="col-12">
-                                                    <p class="mb-2">Current Additional Images:</p>
-                                                </div>
-                                                <% product.images.forEach((image, index) => { %>
-                                                    <div class="col-6 col-md-4 col-lg-3 mb-3">
-                                                        <div class="existing-image">
-                                                            <img src="<%= image.url %>" alt="Product image <%= index + 1 %>" class="img-fluid rounded">
-                                                            <button type="button" class="btn btn-danger btn-sm btn-remove" onclick="removeAdditionalImage('<%= index %>')">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                <% }) %>
-                                            </div>
-                                            <input type="hidden" id="removedAdditionalImages" name="removedAdditionalImages" value="">
-                                        <% } %>
-                                        
-                                        <div class="row mt-2" id="additionalImagesPreview"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-4">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Organization</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="categoryId" class="form-label">Category *</label>
-                                        <select class="form-select" id="categoryId" name="categoryId" required>
-                                            <option value="">Select a category</option>
-                                            <% if (categories && categories.length > 0) { %>
-                                                <% categories.forEach(category => { %>
-                                                    <option value="<%= category.id %>" <%= product.categoryId == category.id ? 'selected' : '' %>>
-                                                        <%= category.name %>
-                                                    </option>
-                                                <% }) %>
-                                            <% } %>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="brand" class="form-label">Brand</label>
-                                        <input type="text" class="form-control" id="brand" name="brand" value="<%= product.brand || '' %>">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="tags" class="form-label">Tags</label>
-                                        <input type="text" class="form-control" id="tags" name="tags" value="<%= product.tags || '' %>">
-                                        <div class="form-text">Separate with commas</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Status & Visibility</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="status" class="form-label">Status</label>
-                                        <select class="form-select" id="status" name="status">
-                                            <option value="active" <%= product.status === 'active' ? 'selected' : '' %>>Active</option>
-                                            <option value="draft" <%= product.status === 'draft' ? 'selected' : '' %>>Draft</option>
-                                            <option value="archived" <%= product.status === 'archived' ? 'selected' : '' %>>Archived</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="visibility" class="form-label">Visibility</label>
-                                        <select class="form-select" id="visibility" name="visibility">
-                                            <option value="public" <%= product.visibility === 'public' ? 'selected' : '' %>>Public</option>
-                                            <option value="private" <%= product.visibility === 'private' ? 'selected' : '' %>>Private</option>
-                                            <option value="hidden" <%= product.visibility === 'hidden' ? 'selected' : '' %>>Hidden</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="featured" name="featured" <%= product.featured ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="featured">
-                                                Featured product
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="newArrival" name="newArrival" <%= product.newArrival ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="newArrival">
-                                                New arrival
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="bestSeller" name="bestSeller" <%= product.bestSeller ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="bestSeller">
-                                                Best seller
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Shipping</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="weight" class="form-label">Weight (kg)</label>
-                                        <input type="number" class="form-control" id="weight" name="weight" step="0.01" min="0" value="<%= product.weight || '' %>">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="dimensions" class="form-label">Dimensions (L×W×H cm)</label>
-                                        <div class="row g-2">
-                                            <div class="col-4">
-                                                <input type="number" class="form-control" placeholder="Length" name="length" step="0.1" min="0" value="<%= product.length || '' %>">
-                                            </div>
-                                            <div class="col-4">
-                                                <input type="number" class="form-control" placeholder="Width" name="width" step="0.1" min="0" value="<%= product.width || '' %>">
-                                            </div>
-                                            <div class="col-4">
-                                                <input type="number" class="form-control" placeholder="Height" name="height" step="0.1" min="0" value="<%= product.height || '' %>">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="requiresShipping" name="requiresShipping" <%= product.requiresShipping ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="requiresShipping">
-                                                Requires shipping
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <i class="bi bi-check-circle"></i> Update Product
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='/admin/products'">
-                                            Cancel
-                                        </button>
-                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                            <i class="bi bi-trash"></i> Delete Product
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </main>
+                </div>
+            </form>
+            
+            <form id="delete-form" action="/admin/products/<%= product.id %>?_method=DELETE" method="POST" class="d-none"></form>
         </div>
     </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete "<strong><%= product.name %></strong>"?</p>
-                    <p class="text-danger">This action cannot be undone. All product data, images, and related information will be permanently deleted.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form action="/admin/products/<%= product.id %>" method="POST" style="display: inline;">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-danger">Delete Product</button>
-                    </form>
-                </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h6 class="fw-bold mb-4">Product Image</h6>
+            <div class="placeholder-img rounded-4 mb-3" style="height: 250px;">
+                <% if (product.image_url) { %>
+                    <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-fluid object-fit-cover w-100 h-100">
+                <% } else { %>
+                    <i class="fas fa-image fa-3x opacity-25"></i>
+                <% } %>
+            </div>
+            <div class="mb-3">
+                <input type="file" class="form-control border-0 bg-light" id="image">
+            </div>
+            <p class="text-muted small mb-0 text-center">
+                Click to change image. <br>Recommended size: 800x800px.
+            </p>
+        </div>
+        
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
+            <h6 class="fw-bold mb-3">Product Stats</h6>
+            <div class="d-flex justify-content-between mb-2 small">
+                <span class="text-muted">Total Sales:</span>
+                <span class="fw-bold">45 units</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2 small">
+                <span class="text-muted">Revenue:</span>
+                <span class="fw-bold text-success">$2,245.55</span>
+            </div>
+            <div class="d-flex justify-content-between small">
+                <span class="text-muted">View Count:</span>
+                <span class="fw-bold">1,204</span>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        // Image preview for main image
-        document.getElementById('mainImage')?.addEventListener('change', function(e) {
-            const preview = document.getElementById('mainImagePreview');
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded" alt="Preview">`;
-                }
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-
-        // Image preview for additional images
-        document.getElementById('additionalImages')?.addEventListener('change', function(e) {
-            const previewContainer = document.getElementById('additionalImagesPreview');
-            
-            if (this.files) {
-                for (let i = 0; i < this.files.length; i++) {
-                    const reader = new FileReader();
-                    const col = document.createElement('div');
-                    col.className = 'col-6 col-md-4 mb-2';
-                    
-                    reader.onload = function(e) {
-                        col.innerHTML = `
-                            <div class="position-relative">
-                                <img src="${e.target.result}" class="img-fluid rounded" alt="Preview ${i+1}">
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" onclick="removeNewImage(${i})">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </div>
-                        `;
-                    }
-                    reader.readAsDataURL(this.files[i]);
-                    previewContainer.appendChild(col);
-                }
-            }
-        });
-
-        function removeMainImage() {
-            document.getElementById('removeMainImage').value = '1';
-            document.querySelector('.existing-image').style.display = 'none';
-        }
-
-        function removeAdditionalImage(index) {
-            const removedInput = document.getElementById('removedAdditionalImages');
-            const currentValue = removedInput.value ? removedInput.value.split(',') : [];
-            currentValue.push(index);
-            removedInput.value = currentValue.join(',');
-            
-            // Hide the image
-            const imageElement = event.target.closest('.existing-image').parentElement;
-            imageElement.style.display = 'none';
-        }
-
-        function removeNewImage(index) {
-            // This would need more complex handling to remove from FileList
-            // For now, just reload the page
-            location.reload();
-        }
-
-        // Auto-generate slug from name
-        document.getElementById('name').addEventListener('input', function() {
-            const slugInput = document.getElementById('slug');
-            if (!slugInput.value) {
-                const slug = this.value
-                    .toLowerCase()
-                    .replace(/[^\w\s]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/--+/g, '-');
-                slugInput.value = slug;
-            }
-        });
-
-        // Initialize Select2
-        $(document).ready(function() {
-            $('#categoryId').select2({
-                placeholder: 'Select a category',
-                allowClear: true
-            });
-        });
-
-        // Form validation
-        document.getElementById('productForm').addEventListener('submit', function(e) {
-            const price = parseFloat(document.getElementById('price').value);
-            const comparePrice = parseFloat(document.getElementById('comparePrice').value);
-            
-            if (comparePrice > 0 && comparePrice <= price) {
-                e.preventDefault();
-                alert('Compare at price must be greater than current price to show discount.');
-                return false;
-            }
-            
-            if (price <= 0) {
-                e.preventDefault();
-                alert('Price must be greater than 0.');
-                return false;
-            }
-        });
-    </script>
-</body>
-</html>
+</div>
+<% } else { %>
+    <div class="alert alert-warning rounded-4 border-0 shadow-sm p-4">
+        <i class="fas fa-exclamation-triangle me-2"></i> Product not found.
+    </div>
+<% } %>

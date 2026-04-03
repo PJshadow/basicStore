@@ -1,293 +1,126 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - BasicStore</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <%- include('../partials/header') %>
-    <%- include('../partials/navbar') %>
-    
-    <div class="container mt-4">
-        <%- include('../partials/messages') %>
-        
-        <div class="row">
-            <div class="col-12">
-                <h1 class="h2 mb-4">Checkout</h1>
-            </div>
-        </div>
-        
-        <form action="/orders/create" method="POST" id="checkoutForm">
-            <div class="row">
-                <!-- Billing & Shipping -->
-                <div class="col-lg-8">
-                    <!-- Contact Information -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Contact Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="firstName" class="form-label">First Name *</label>
-                                    <input type="text" class="form-control" id="firstName" name="firstName" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="lastName" class="form-label">Last Name *</label>
-                                    <input type="text" class="form-control" id="lastName" name="lastName" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="email" class="form-label">Email Address *</label>
-                                    <input type="email" class="form-control" id="email" name="email" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="phone" class="form-label">Phone Number *</label>
-                                    <input type="tel" class="form-control" id="phone" name="phone" required>
-                                </div>
-                            </div>
-                        </div>
+<div class="row g-5 pb-5">
+    <!-- Billing Details -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+            <h4 class="fw-bold mb-5">Billing Details</h4>
+            
+            <form action="/orders" method="POST">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label for="firstName" class="form-label fw-semibold">First Name</label>
+                        <input type="text" class="form-control bg-light" id="firstName" name="first_name" required>
                     </div>
-                    
-                    <!-- Shipping Address -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Shipping Address</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="sameAsBilling">
-                                <label class="form-check-label" for="sameAsBilling">
-                                    Same as billing address
-                                </label>
-                            </div>
-                            
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label for="address" class="form-label">Street Address *</label>
-                                    <input type="text" class="form-control" id="address" name="shippingAddress" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="city" class="form-label">City *</label>
-                                    <input type="text" class="form-control" id="city" name="shippingCity" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="state" class="form-label">State/Province *</label>
-                                    <input type="text" class="form-control" id="state" name="shippingState" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="zipCode" class="form-label">ZIP/Postal Code *</label>
-                                    <input type="text" class="form-control" id="zipCode" name="shippingZip" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="country" class="form-label">Country *</label>
-                                    <select class="form-select" id="country" name="shippingCountry" required>
-                                        <option value="">Select Country</option>
-                                        <option value="US" selected>United States</option>
-                                        <option value="CA">Canada</option>
-                                        <option value="UK">United Kingdom</option>
-                                        <option value="AU">Australia</option>
-                                        <option value="BR">Brazil</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label fw-semibold">Last Name</label>
+                        <input type="text" class="form-control bg-light" id="lastName" name="last_name" required>
                     </div>
-                    
-                    <!-- Payment Method -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Payment Method</h5>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="email" class="form-label fw-semibold">Email Address</label>
+                    <input type="email" class="form-control bg-light" id="email" name="email" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                    <input type="tel" class="form-control bg-light" id="phone" name="phone" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="address" class="form-label fw-semibold">Street Address</label>
+                    <input type="text" class="form-control bg-light mb-2" id="address" name="address" placeholder="House number and street name" required>
+                    <input type="text" class="form-control bg-light" name="address2" placeholder="Apartment, suite, unit, etc. (optional)">
+                </div>
+                
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                        <label for="city" class="form-label fw-semibold">City</label>
+                        <input type="text" class="form-control bg-light" id="city" name="city" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="state" class="form-label fw-semibold">State</label>
+                        <input type="text" class="form-control bg-light" id="state" name="state" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="zipCode" class="form-label fw-semibold">ZIP Code</label>
+                        <input type="text" class="form-control bg-light" id="zipCode" name="zip_code" required>
+                    </div>
+                </div>
+                
+                <h5 class="fw-bold mb-4">Payment Method</h5>
+                <div class="p-3 bg-light rounded-4 mb-5 shadow-sm border border-primary-subtle">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="card" checked>
+                        <label class="form-check-label fw-bold" for="creditCard">
+                            Credit/Debit Card <i class="fas fa-credit-card ms-2 text-primary"></i>
+                        </label>
+                    </div>
+                    <div class="ps-4">
+                        <div class="mb-3">
+                            <input type="text" class="form-control bg-white" placeholder="Card Number" required>
                         </div>
-                        <div class="card-body">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="credit_card" checked>
-                                <label class="form-check-label" for="creditCard">
-                                    <i class="bi bi-credit-card me-2"></i> Credit/Debit Card
-                                </label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control bg-white" placeholder="MM/YY" required>
                             </div>
-                            
-                            <div id="creditCardFields">
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <label for="cardNumber" class="form-label">Card Number *</label>
-                                        <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="expiryDate" class="form-label">Expiry Date *</label>
-                                        <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="cvv" class="form-label">CVV *</label>
-                                        <input type="text" class="form-control" id="cvv" placeholder="123">
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="cardName" class="form-label">Name on Card *</label>
-                                        <input type="text" class="form-control" id="cardName" placeholder="John Doe">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" type="radio" name="paymentMethod" id="paypal" value="paypal">
-                                <label class="form-check-label" for="paypal">
-                                    <i class="bi bi-paypal me-2"></i> PayPal
-                                </label>
-                            </div>
-                            
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod">
-                                <label class="form-check-label" for="cod">
-                                    <i class="bi bi-cash me-2"></i> Cash on Delivery
-                                </label>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control bg-white" placeholder="CVC" required>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Order Summary -->
-                <div class="col-lg-4">
-                    <div class="card mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Order Summary</h5>
-                        </div>
-                        <div class="card-body">
-                            <!-- Cart Items Preview -->
-                            <div class="mb-3">
-                                <h6 class="mb-2">Items (<%= cart ? cart.length : 0 %>)</h6>
-                                <% if (cart && cart.length > 0) { 
-                                    let subtotal = 0;
-                                    cart.forEach(item => {
-                                        subtotal += item.price * item.quantity;
-                                %>
-                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                        <div>
-                                            <small class="d-block"><%= item.name %></small>
-                                            <small class="text-muted">Qty: <%= item.quantity %></small>
-                                        </div>
-                                        <small>$<%= (item.price * item.quantity).toFixed(2) %></small>
-                                    </div>
-                                <% }); } %>
-                            </div>
-                            
-                            <!-- Order Totals -->
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Subtotal</span>
-                                    <span>$<%= subtotal ? subtotal.toFixed(2) : '0.00' %></span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Shipping</span>
-                                    <span>
-                                        <% if (subtotal > 50) { %>
-                                            <span class="text-success">FREE</span>
-                                        <% } else { %>
-                                            $5.99
-                                        <% } %>
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Tax</span>
-                                    <span>$<%= (subtotal * 0.08).toFixed(2) %></span>
-                                </div>
-                                <hr>
-                                <div class="d-flex justify-content-between mb-3">
-                                    <strong>Total</strong>
-                                    <strong>
-                                        $<%= (subtotal + (subtotal > 50 ? 0 : 5.99) + (subtotal * 0.08)).toFixed(2) %>
-                                    </strong>
-                                </div>
-                            </div>
-                            
-                            <!-- Terms & Conditions -->
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="terms" required>
-                                <label class="form-check-label small" for="terms">
-                                    I agree to the <a href="/terms" target="_blank">Terms & Conditions</a> and <a href="/privacy" target="_blank">Privacy Policy</a> *
-                                </label>
-                            </div>
-                            
-                            <!-- Submit Button -->
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <i class="bi bi-lock"></i> Place Order
-                            </button>
-                            
-                            <!-- Security Info -->
-                            <div class="mt-3 text-center">
-                                <p class="small text-muted mb-1">
-                                    <i class="bi bi-shield-check text-success"></i>
-                                    Secure SSL encryption
-                                </p>
-                                <p class="small text-muted">
-                                    <i class="bi bi-arrow-counterclockwise"></i>
-                                    30-day return policy
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Need Help? -->
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="bi bi-question-circle text-primary"></i>
-                                Need Help?
-                            </h6>
-                            <ul class="small text-muted mb-0">
-                                <li>Call us: 1-800-123-4567</li>
-                                <li>Email: support@basicstore.com</li>
-                                <li>Live chat available 24/7</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form>
+                <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm">
+                    Place Order
+                </button>
+            </form>
+        </div>
     </div>
     
-    <%- include('../partials/footer') %>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/main.js"></script>
-    <script>
-        // Toggle billing/shipping address
-        document.getElementById('sameAsBilling').addEventListener('change', function() {
-            const shippingFields = document.querySelectorAll('[name^="shipping"]');
-            shippingFields.forEach(field => {
-                field.disabled = this.checked;
-                if (this.checked) {
-                    const billingField = document.querySelector('[name="' + field.name.replace('shipping', 'billing') + '"]');
-                    if (billingField) {
-                        field.value = billingField.value;
-                    }
-                }
-            });
-        });
-        
-        // Toggle payment method fields
-        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const creditCardFields = document.getElementById('creditCardFields');
-                if (this.value === 'credit_card') {
-                    creditCardFields.style.display = 'block';
-                } else {
-                    creditCardFields.style.display = 'none';
-                }
-            });
-        });
-        
-        // Form validation
-        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-            const terms = document.getElementById('terms');
-            if (!terms.checked) {
-                e.preventDefault();
-                alert('Please agree to the Terms & Conditions');
-                terms.focus();
-            }
-        });
-    </script>
-</body>
-</html>
+    <!-- Order Summary -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 sticky-lg-top" style="top: 2rem;">
+            <h4 class="fw-bold mb-5">Your Order</h4>
+            
+            <div class="order-items mb-4">
+                <% if (typeof cartItems !== 'undefined' && cartItems.length > 0) { %>
+                    <% cartItems.forEach(item => { %>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-3 overflow-hidden me-3" style="width: 50px; height: 50px;">
+                                    <div class="placeholder-img h-100 small"><i class="fas fa-image"></i></div>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0"><%= item.name %></h6>
+                                    <small class="text-muted">Qty: <%= item.quantity %></small>
+                                </div>
+                            </div>
+                            <span class="fw-bold text-dark">$<%= (item.price * item.quantity).toFixed(2) %></span>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+            
+            <div class="p-4 bg-light rounded-4">
+                <div class="d-flex justify-content-between mb-3 text-muted small">
+                    <span>Subtotal</span>
+                    <span class="fw-bold text-dark">$0.00</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 text-muted small">
+                    <span>Shipping</span>
+                    <span class="fw-bold text-success">Free Shipping</span>
+                </div>
+                <hr class="my-4 opacity-10">
+                <div class="d-flex justify-content-between align-items-end">
+                    <span class="fw-bold h5 mb-0">Total</span>
+                    <span class="fw-bold h4 text-primary mb-0">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="mt-5 text-center text-muted small">
+                <i class="fas fa-shield-halved mb-2 fa-2x d-block text-primary opacity-50"></i>
+                Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <a href="/privacy" class="text-primary">privacy policy</a>.
+            </div>
+        </div>
+    </div>
+</div>

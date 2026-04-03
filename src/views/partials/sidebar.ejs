@@ -1,85 +1,69 @@
-<div class="card mb-3">
-    <div class="card-header bg-primary text-white">
-        <i class="fas fa-user-circle me-2"></i> Admin Panel
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-dark text-white py-3 border-0">
+        <h6 class="fw-bold mb-0"><i class="fas fa-shield-halved me-2 opacity-75"></i> Administration</h6>
     </div>
-    <div class="list-group list-group-flush">
-        <a href="/admin" class="list-group-item list-group-item-action <%= (activePage === 'dashboard') ? 'active' : '' %>">
-            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+    <div class="list-group list-group-flush border-0">
+        <a href="/admin" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'dashboard') ? 'bg-primary text-white' : '' %>">
+            <i class="fas fa-tachometer-alt me-2 opacity-75"></i> Dashboard
         </a>
         
-        <div class="list-group-item">
-            <small class="text-muted">PRODUCT MANAGEMENT</small>
+        <div class="bg-light px-3 py-2">
+            <small class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.05rem;">Products</small>
         </div>
-        <a href="/admin/products" class="list-group-item list-group-item-action <%= (activePage === 'products') ? 'active' : '' %>">
-            <i class="fas fa-box me-2"></i> All Products
+        <a href="/admin/products" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'products') ? 'bg-primary text-white' : '' %>">
+            <i class="fas fa-box me-2 opacity-75"></i> All Products
         </a>
-        <a href="/admin/products/new" class="list-group-item list-group-item-action">
-            <i class="fas fa-plus-circle me-2"></i> Add New Product
+        <a href="/admin/products/new" class="list-group-item list-group-item-action py-3 border-0">
+            <i class="fas fa-plus-circle me-2 opacity-75 text-success"></i> Add New Product
         </a>
-        <a href="/admin/categories" class="list-group-item list-group-item-action">
-            <i class="fas fa-tags me-2"></i> Categories
+        <a href="/admin/categories" class="list-group-item list-group-item-action py-3 border-0">
+            <i class="fas fa-tags me-2 opacity-75"></i> Categories
         </a>
         
-        <div class="list-group-item">
-            <small class="text-muted">SALES & ORDERS</small>
+        <div class="bg-light px-3 py-2">
+            <small class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.05rem;">Customers & Sales</small>
         </div>
-        <a href="/admin/orders" class="list-group-item list-group-item-action <%= (activePage === 'orders') ? 'active' : '' %>">
-            <i class="fas fa-shopping-cart me-2"></i> Orders
-            <span class="badge bg-danger float-end">5</span>
+        <a href="/admin/orders" class="list-group-item list-group-item-action py-3 border-0 d-flex justify-content-between align-items-center <%= (typeof activePage !== 'undefined' && activePage === 'orders') ? 'bg-primary text-white' : '' %>">
+            <div><i class="fas fa-shopping-cart me-2 opacity-75"></i> Orders</div>
+            <span class="badge rounded-pill <%= (typeof activePage !== 'undefined' && activePage === 'orders') ? 'bg-white text-primary' : 'bg-danger' %>">5</span>
         </a>
-        <a href="/admin/customers" class="list-group-item list-group-item-action <%= (activePage === 'customers') ? 'active' : '' %>">
-            <i class="fas fa-users me-2"></i> Customers
+        <a href="/admin/customers" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'customers') ? 'bg-primary text-white' : '' %>">
+            <i class="fas fa-users me-2 opacity-75"></i> Customers
+        </a>
+        <a href="/admin/coupons" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'coupons') ? 'bg-primary text-white' : '' %>">
+            <i class="fas fa-tag me-2 opacity-75"></i> Coupons
         </a>
         
-        <div class="list-group-item">
-            <small class="text-muted">MARKETING</small>
+        <div class="bg-light px-3 py-2">
+            <small class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.05rem;">Analysis</small>
         </div>
-        <a href="/admin/coupons" class="list-group-item list-group-item-action <%= (activePage === 'coupons') ? 'active' : '' %>">
-            <i class="fas fa-tag me-2"></i> Coupons
+        <a href="/admin/reports/sales" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'reports') ? 'bg-primary text-white' : '' %>">
+            <i class="fas fa-chart-line me-2 opacity-75"></i> Sales Reports
         </a>
         
-        <div class="list-group-item">
-            <small class="text-muted">REPORTS</small>
+        <div class="bg-light px-3 py-2">
+            <small class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.05rem;">System</small>
         </div>
-        <a href="/admin/reports/sales" class="list-group-item list-group-item-action <%= (activePage === 'reports') ? 'active' : '' %>">
-            <i class="fas fa-chart-line me-2"></i> Sales Reports
-        </a>
-        <a href="/admin/reports/inventory" class="list-group-item list-group-item-action">
-            <i class="fas fa-chart-pie me-2"></i> Inventory Reports
-        </a>
-        
-        <div class="list-group-item">
-            <small class="text-muted">SETTINGS</small>
-        </div>
-        <a href="/admin/settings" class="list-group-item list-group-item-action <%= (activePage === 'settings') ? 'active' : '' %>">
-            <i class="fas fa-cog me-2"></i> Store Settings
-        </a>
-        <a href="/admin/users" class="list-group-item list-group-item-action">
-            <i class="fas fa-user-shield me-2"></i> User Management
+        <a href="/admin/settings" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'settings') ? 'bg-primary text-white' : '' %>">
+            <i class="fas fa-cog me-2 opacity-75"></i> Store Settings
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header bg-info text-white">
-        <i class="fas fa-chart-bar me-2"></i> Quick Stats
-    </div>
-    <div class="card-body p-3">
-        <div class="d-flex justify-content-between mb-2">
-            <small>Today's Orders</small>
-            <strong>12</strong>
+<div class="card border-0 shadow-sm rounded-4 bg-primary text-white">
+    <div class="card-body p-4">
+        <h6 class="fw-bold mb-3"><i class="fas fa-bolt me-2"></i> Quick Stats</h6>
+        <div class="d-flex justify-content-between mb-2 small">
+            <span class="opacity-75">Today's Orders</span>
+            <span class="fw-bold">12</span>
         </div>
-        <div class="d-flex justify-content-between mb-2">
-            <small>Pending Orders</small>
-            <strong class="text-warning">5</strong>
+        <div class="d-flex justify-content-between mb-2 small">
+            <span class="opacity-75">Pending</span>
+            <span class="fw-bold text-warning">5</span>
         </div>
-        <div class="d-flex justify-content-between mb-2">
-            <small>Low Stock Items</small>
-            <strong class="text-danger">3</strong>
-        </div>
-        <div class="d-flex justify-content-between">
-            <small>Total Revenue</small>
-            <strong class="text-success">$2,450</strong>
+        <div class="d-flex justify-content-between small">
+            <span class="opacity-75">Revenue</span>
+            <span class="fw-bold">$2,450</span>
         </div>
     </div>
 </div>

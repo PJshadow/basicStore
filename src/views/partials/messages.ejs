@@ -1,8 +1,13 @@
 <% if (success_msg && success_msg.length > 0) { %>
-    <div class="container mt-3">
+    <div class="container mt-4">
         <% success_msg.forEach(function(message) { %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i> <%= message %>
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 py-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                        <i class="fas fa-check small"></i>
+                    </div>
+                    <div class="fw-semibold"><%= message %></div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <% }); %>
@@ -10,10 +15,15 @@
 <% } %>
 
 <% if (error_msg && error_msg.length > 0) { %>
-    <div class="container mt-3">
+    <div class="container mt-4">
         <% error_msg.forEach(function(message) { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-circle me-2"></i> <%= message %>
+            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 py-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                        <i class="fas fa-exclamation small"></i>
+                    </div>
+                    <div class="fw-semibold"><%= message %></div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <% }); %>
@@ -21,10 +31,15 @@
 <% } %>
 
 <% if (error && error.length > 0) { %>
-    <div class="container mt-3">
+    <div class="container mt-4">
         <% error.forEach(function(message) { %>
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i> <%= message %>
+            <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm rounded-4 py-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                        <i class="fas fa-triangle-exclamation small"></i>
+                    </div>
+                    <div class="fw-semibold"><%= message %></div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <% }); %>

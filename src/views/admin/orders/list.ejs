@@ -1,447 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management - Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <style>
-        .order-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-processing { background-color: #cce5ff; color: #004085; }
-        .status-shipped { background-color: #d1ecf1; color: #0c5460; }
-        .status-delivered { background-color: #d4edda; color: #155724; }
-        .status-cancelled { background-color: #f8d7da; color: #721c24; }
-        .status-refunded { background-color: #e2e3e5; color: #383d41; }
-        
-        .payment-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .payment-pending { background-color: #fff3cd; color: #856404; }
-        .payment-paid { background-color: #d4edda; color: #155724; }
-        .payment-failed { background-color: #f8d7da; color: #721c24; }
-        .payment-refunded { background-color: #e2e3e5; color: #383d41; }
-        
-        .order-card {
-            transition: all 0.2s;
-            border-left: 4px solid transparent;
-        }
-        .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .order-card.pending { border-left-color: #ffc107; }
-        .order-card.processing { border-left-color: #0dcaf0; }
-        .order-card.shipped { border-left-color: #17a2b8; }
-        .order-card.delivered { border-left-color: #28a745; }
-        .order-card.cancelled { border-left-color: #dc3545; }
-        
-        .filter-card {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .stats-card {
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            color: white;
-        }
-        .stats-total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .stats-revenue { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .stats-pending { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .stats-avg { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-    </style>
-</head>
-<body>
-    <%- include('../layouts/main') %>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Orders</h2>
+</div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <%- include('../partials/sidebar') %>
-            
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Order Management</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportOrders()">
-                                <i class="bi bi-download"></i> Export
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="printOrders()">
-                                <i class="bi bi-printer"></i> Print
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Statistics Cards -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="stats-card stats-total">
-                            <h6 class="text-uppercase">Total Orders</h6>
-                            <h3><%= stats.totalOrders || 0 %></h3>
-                            <small>This month: <%= stats.monthlyOrders || 0 %></small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card stats-revenue">
-                            <h6 class="text-uppercase">Total Revenue</h6>
-                            <h3>$<%= stats.totalRevenue ? stats.totalRevenue.toFixed(2) : '0.00' %></h3>
-                            <small>This month: $<%= stats.monthlyRevenue ? stats.monthlyRevenue.toFixed(2) : '0.00' %></small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card stats-pending">
-                            <h6 class="text-uppercase">Pending Orders</h6>
-                            <h3><%= stats.pendingOrders || 0 %></h3>
-                            <small><%= stats.pendingPercentage ? stats.pendingPercentage.toFixed(1) : '0' %>% of total</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card stats-avg">
-                            <h6 class="text-uppercase">Avg. Order Value</h6>
-                            <h3>$<%= stats.averageOrderValue ? stats.averageOrderValue.toFixed(2) : '0.00' %></h3>
-                            <small>Last 30 days</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filters -->
-                <div class="filter-card">
-                    <form id="filterForm" method="GET" action="/admin/orders">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label for="status" class="form-label">Order Status</label>
-                                <select class="form-select" id="status" name="status">
-                                    <option value="">All Statuses</option>
-                                    <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
-                                    <option value="processing" <%= filters.status === 'processing' ? 'selected' : '' %>>Processing</option>
-                                    <option value="shipped" <%= filters.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
-                                    <option value="delivered" <%= filters.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
-                                    <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                    <option value="refunded" <%= filters.status === 'refunded' ? 'selected' : '' %>>Refunded</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="paymentStatus" class="form-label">Payment Status</label>
-                                <select class="form-select" id="paymentStatus" name="paymentStatus">
-                                    <option value="">All Payments</option>
-                                    <option value="pending" <%= filters.paymentStatus === 'pending' ? 'selected' : '' %>>Pending</option>
-                                    <option value="paid" <%= filters.paymentStatus === 'paid' ? 'selected' : '' %>>Paid</option>
-                                    <option value="failed" <%= filters.paymentStatus === 'failed' ? 'selected' : '' %>>Failed</option>
-                                    <option value="refunded" <%= filters.paymentStatus === 'refunded' ? 'selected' : '' %>>Refunded</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="dateFrom" class="form-label">Date From</label>
-                                <input type="text" class="form-control datepicker" id="dateFrom" name="dateFrom" value="<%= filters.dateFrom || '' %>" placeholder="Select date">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="dateTo" class="form-label">Date To</label>
-                                <input type="text" class="form-control datepicker" id="dateTo" name="dateTo" value="<%= filters.dateTo || '' %>" placeholder="Select date">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="search" class="form-label">Search</label>
-                                <input type="text" class="form-control" id="search" name="search" value="<%= filters.search || '' %>" placeholder="Order ID, Customer, Email...">
-                            </div>
-                            <div class="col-md-2">
-                                <label for="minAmount" class="form-label">Min Amount</label>
-                                <input type="number" class="form-control" id="minAmount" name="minAmount" value="<%= filters.minAmount || '' %>" placeholder="$0.00" step="0.01">
-                            </div>
-                            <div class="col-md-2">
-                                <label for="maxAmount" class="form-label">Max Amount</label>
-                                <input type="number" class="form-control" id="maxAmount" name="maxAmount" value="<%= filters.maxAmount || '' %>" placeholder="$0.00" step="0.01">
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <div class="btn-group w-100">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-filter"></i> Apply Filters
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
-                                        <i class="bi bi-x-circle"></i> Clear
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Orders Table -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
-                                        </th>
-                                        <th>Order ID</th>
-                                        <th>Customer</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Payment</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% if (orders && orders.length > 0) { %>
-                                        <% orders.forEach(order => { %>
-                                            <tr class="order-card <%= order.status %>">
-                                                <td>
-                                                    <input type="checkbox" class="order-checkbox" value="<%= order.id %>">
-                                                </td>
-                                                <td>
-                                                    <strong>#<%= order.orderNumber || order.id %></strong>
-                                                    <% if (order.isGuest) { %>
-                                                        <span class="badge bg-secondary">Guest</span>
-                                                    <% } %>
-                                                </td>
-                                                <td>
-                                                    <div><strong><%= order.customerName %></strong></div>
-                                                    <small class="text-muted"><%= order.customerEmail %></small>
-                                                </td>
-                                                <td>
-                                                    <div><%= new Date(order.createdAt).toLocaleDateString() %></div>
-                                                    <small class="text-muted"><%= new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></small>
-                                                </td>
-                                                <td>
-                                                    <strong>$<%= order.totalAmount.toFixed(2) %></strong>
-                                                    <div class="text-muted"><small><%= order.itemsCount %> items</small></div>
-                                                </td>
-                                                <td>
-                                                    <span class="order-status status-<%= order.status %>">
-                                                        <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
-                                                    </span>
-                                                    <% if (order.isUrgent) { %>
-                                                        <span class="badge bg-danger">Urgent</span>
-                                                    <% } %>
-                                                </td>
-                                                <td>
-                                                    <span class="payment-status payment-<%= order.paymentStatus %>">
-                                                        <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %>
-                                                    </span>
-                                                    <div class="text-muted"><small><%= order.paymentMethod %></small></div>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <a href="/admin/orders/<%= order.id %>" class="btn btn-outline-primary" title="View Details">
-                                                            <i class="bi bi-eye"></i>
-                                                        </a>
-                                                        <a href="/admin/orders/<%= order.id %>/edit" class="btn btn-outline-secondary" title="Edit Order">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                        <button type="button" class="btn btn-outline-danger" onclick="showDeleteModal('<%= order.id %>', '#<%= order.orderNumber || order.id %>')" title="Delete Order">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        <% }) %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="8" class="text-center py-4">
-                                                <div class="text-muted">
-                                                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                                                    <h5 class="mt-3">No orders found</h5>
-                                                    <p>Try adjusting your filters or check back later.</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Bulk Actions -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                <select class="form-select form-select-sm d-inline-block w-auto" id="bulkAction">
-                                    <option value="">Bulk Actions</option>
-                                    <option value="mark_processing">Mark as Processing</option>
-                                    <option value="mark_shipped">Mark as Shipped</option>
-                                    <option value="mark_delivered">Mark as Delivered</option>
-                                    <option value="mark_cancelled">Mark as Cancelled</option>
-                                    <option value="send_email">Send Email</option>
-                                    <option value="export_selected">Export Selected</option>
-                                    <option value="delete">Delete Selected</option>
-                                </select>
-                                <button type="button" class="btn btn-sm btn-primary ms-2" onclick="applyBulkAction()">Apply</button>
-                            </div>
-                            
-                            <!-- Pagination -->
-                            <% if (pagination && pagination.totalPages > 1) { %>
-                                <nav>
-                                    <ul class="pagination mb-0">
-                                        <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
-                                            <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&<%= queryString %>">Previous</a>
-                                        </li>
-                                        
-                                        <% for (let i = 1; i <= pagination.totalPages; i++) { %>
-                                            <% if (i === 1 || i === pagination.totalPages || (i >= pagination.currentPage - 2 && i <= pagination.currentPage + 2)) { %>
-                                                <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
-                                                    <a class="page-link" href="?page=<%= i %>&<%= queryString %>"><%= i %></a>
-                                                </li>
-                                            <% } else if (i === pagination.currentPage - 3 || i === pagination.currentPage + 3) { %>
-                                                <li class="page-item disabled">
-                                                    <span class="page-link">...</span>
-                                                </li>
-                                            <% } %>
-                                        <% } %>
-                                        
-                                        <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
-                                            <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&<%= queryString %>">Next</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            <% } %>
-                        </div>
-                    </div>
-                </div>
-            </main>
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr class="small text-uppercase fw-bold text-muted">
+                        <th class="px-4 py-3 border-0">Order ID</th>
+                        <th class="py-3 border-0">Customer</th>
+                        <th class="py-3 border-0">Date</th>
+                        <th class="py-3 border-0">Total</th>
+                        <th class="py-3 border-0">Status</th>
+                        <th class="px-4 py-3 border-0 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (typeof orders !== 'undefined' && orders.length > 0) { %>
+                        <% orders.forEach(order => { %>
+                            <tr>
+                                <td class="px-4 py-3 fw-bold text-dark">#<%= order.order_number || order.id %></td>
+                                <td class="py-3">
+                                    <div class="fw-semibold text-dark"><%= order.customer_name || 'Guest' %></div>
+                                    <small class="text-muted"><%= order.customer_email || '' %></small>
+                                </td>
+                                <td class="py-3 text-muted"><%= new Date(order.created_at).toLocaleDateString() %></td>
+                                <td class="py-3 fw-bold text-dark">$<%= order.total_amount %></td>
+                                <td class="py-3">
+                                    <% 
+                                        let statusClass = 'bg-secondary-subtle text-secondary';
+                                        if (order.status === 'completed') statusClass = 'bg-success-subtle text-success';
+                                        if (order.status === 'pending') statusClass = 'bg-warning-subtle text-warning';
+                                        if (order.status === 'cancelled') statusClass = 'bg-danger-subtle text-danger';
+                                    %>
+                                    <span class="badge <%= statusClass %> px-3 py-2 rounded-pill small text-uppercase" style="font-size: 0.7rem;"><%= order.status %></span>
+                                </td>
+                                <td class="px-4 py-3 text-end">
+                                    <a href="/admin/orders/<%= order.id %>" class="btn btn-sm btn-light border rounded-pill"><i class="fas fa-eye text-primary"></i></a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                No orders found.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <!-- Delete Modal -->
-    <div class="modal fade" id="deleteOrderModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Order</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete order <strong id="deleteOrderNumber"></strong>?</p>
-                    <p class="text-danger"><small>This action cannot be undone. All order data will be permanently deleted.</small></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form id="deleteOrderForm" method="POST" style="display: inline;">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-danger">Delete Order</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
-        // Initialize date pickers
-        flatpickr('.datepicker', {
-            dateFormat: 'Y-m-d',
-            allowInput: true
-        });
-
-        // Toggle select all checkboxes
-        function toggleSelectAll() {
-            const selectAll = document.getElementById('selectAll');
-            const checkboxes = document.querySelectorAll('.order-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-            });
-        }
-
-        // Show delete modal
-        function showDeleteModal(orderId, orderNumber) {
-            document.getElementById('deleteOrderNumber').textContent = orderNumber;
-            document.getElementById('deleteOrderForm').action = `/admin/orders/${orderId}`;
-            const modal = new bootstrap.Modal(document.getElementById('deleteOrderModal'));
-            modal.show();
-        }
-
-        // Reset filters
-        function resetFilters() {
-            document.getElementById('filterForm').reset();
-            document.getElementById('filterForm').submit();
-        }
-
-        // Apply bulk action
-        function applyBulkAction() {
-            const action = document.getElementById('bulkAction').value;
-            const selectedOrders = Array.from(document.querySelectorAll('.order-checkbox:checked'))
-                .map(checkbox => checkbox.value);
-            
-            if (selectedOrders.length === 0) {
-                alert('Please select at least one order.');
-                return;
-            }
-            
-            if (!action) {
-                alert('Please select a bulk action.');
-                return;
-            }
-            
-            if (action === 'delete') {
-                if (!confirm(`Are you sure you want to delete ${selectedOrders.length} order(s)? This action cannot be undone.`)) {
-                    return;
-                }
-            }
-            
-            // In a real application, you would submit this to the server
-            // For now, just show a message
-            alert(`Applying "${action}" to ${selectedOrders.length} order(s). This would be processed on the server.`);
-            
-            // Example of how to submit via fetch:
-            /*
-            fetch('/admin/orders/bulk-action', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: action,
-                    orderIds: selectedOrders
-                })
-            }).then(response => {
-                if (response.ok) {
-                    location.reload();
-                }
-            });
-            */
-        }
-
-        // Export orders
-        function exportOrders() {
-            const filters = {
-                status: document.getElementById('status').value,
-                dateFrom: document.getElementById('dateFrom').value,
-                dateTo: document.getElementById('dateTo').value,
-                search: document.getElementById('search').value
-            };
-            
-            const queryString = new URLSearchParams(filters).toString();
-            window.open(`/admin/orders/export?${queryString}`, '_blank');
-        }
-
-        // Print orders
-        function printOrders() {
-            window.print();
-        }
-
-        // Update URL when filters change (optional)
-        document.getElementById('status').addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
-        });
-        
-        document.getElementById('paymentStatus').addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
-        });
-    </script>
-</body>
-</html>
+</div>

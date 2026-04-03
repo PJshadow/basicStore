@@ -1,461 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders - <%= siteName || 'BasicStore' %></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        .order-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-        }
-        .order-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        .order-header {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #dee2e6;
-            border-radius: 8px 8px 0 0;
-        }
-        .order-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-processing { background-color: #cce5ff; color: #004085; }
-        .status-shipped { background-color: #d1ecf1; color: #0c5460; }
-        .status-delivered { background-color: #d4edda; color: #155724; }
-        .status-cancelled { background-color: #f8d7da; color: #721c24; }
-        
-        .order-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f8f9fa;
-        }
-        .order-item:last-child {
-            border-bottom: none;
-        }
-        .product-image {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-        
-        .empty-state {
-            padding: 60px 20px;
-            text-align: center;
-            color: #6c757d;
-        }
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-        
-        .customer-sidebar {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .customer-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #495057;
-            margin: 0 auto 15px;
-        }
-    </style>
-</head>
-<body>
-    <%- include('../layouts/main') %>
-
-    <div class="container py-4">
-        <div class="row">
-            <!-- Customer Sidebar -->
-            <div class="col-lg-3 mb-4">
-                <div class="customer-sidebar">
-                    <div class="customer-avatar">
-                        <%= customer.initials || 'CU' %>
-                    </div>
-                    <h5 class="text-center mb-3"><%= customer.fullName %></h5>
-                    <ul class="nav flex-column">
-                        <li class="nav-item mb-2">
-                            <a href="/customer/dashboard" class="nav-link text-dark">
-                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a href="/customer/orders" class="nav-link active bg-primary text-white rounded">
-                                <i class="bi bi-bag me-2"></i> My Orders
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a href="/customer/profile" class="nav-link text-dark">
-                                <i class="bi bi-person me-2"></i> Profile
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a href="/customer/addresses" class="nav-link text-dark">
-                                <i class="bi bi-geo-alt me-2"></i> Addresses
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a href="/customer/wishlist" class="nav-link text-dark">
-                                <i class="bi bi-heart me-2"></i> Wishlist
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/logout" class="nav-link text-danger">
-                                <i class="bi bi-box-arrow-right me-2"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                    
-                    <div class="mt-4 pt-3 border-top">
-                        <h6 class="text-muted">Account Summary</h6>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Total Orders:</span>
-                            <strong><%= stats.totalOrders || 0 %></strong>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Total Spent:</span>
-                            <strong>$<%= stats.totalSpent ? stats.totalSpent.toFixed(2) : '0.00' %></strong>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>Member Since:</span>
-                            <strong><%= new Date(customer.createdAt).toLocaleDateString() %></strong>
-                        </div>
-                    </div>
+<div class="row g-4 py-5">
+    <div class="col-lg-3">
+        <%- include('../partials/sidebar') %>
+    </div>
+    
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+            <h2 class="fw-bold mb-5">My Orders</h2>
+            
+            <% if (typeof orders !== 'undefined' && orders.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-light">
+                            <tr class="small text-uppercase fw-bold text-muted">
+                                <th class="px-4 py-3 border-0">Order</th>
+                                <th class="py-3 border-0">Date</th>
+                                <th class="py-3 border-0">Status</th>
+                                <th class="py-3 border-0 text-end">Total</th>
+                                <th class="px-4 py-3 border-0"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(order => { %>
+                                <tr>
+                                    <td class="px-4 py-3 fw-bold text-dark">#<%= order.order_number || order.id %></td>
+                                    <td class="py-3 text-muted"><%= new Date(order.created_at).toLocaleDateString() %></td>
+                                    <td class="py-3">
+                                        <% 
+                                            let statusClass = 'bg-secondary-subtle text-secondary';
+                                            if (order.status === 'completed') statusClass = 'bg-success-subtle text-success';
+                                            if (order.status === 'pending') statusClass = 'bg-warning-subtle text-warning';
+                                        %>
+                                        <span class="badge <%= statusClass %> px-3 py-2 rounded-pill small"><%= order.status %></span>
+                                    </td>
+                                    <td class="py-3 text-end fw-bold text-dark">$<%= order.total_amount %></td>
+                                    <td class="px-4 py-3 text-end">
+                                        <a href="/orders/<%= order.id %>" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold">Details</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="col-lg-9">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="h3 mb-0">My Orders</h1>
-                    <a href="/products" class="btn btn-primary">
-                        <i class="bi bi-cart-plus me-2"></i> Continue Shopping
-                    </a>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <div class="mb-4 opacity-10"><i class="fas fa-box-open fa-5x"></i></div>
+                    <h4 class="fw-bold mb-3">No orders yet</h4>
+                    <p class="text-muted mb-5">You haven't placed any orders with us yet. Start shopping and find something you love!</p>
+                    <a href="/products" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm">Explore Products</a>
                 </div>
-
-                <!-- Filters -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <form id="filterForm" method="GET" action="/customer/orders">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="status" class="form-label">Order Status</label>
-                                    <select class="form-select" id="status" name="status">
-                                        <option value="">All Orders</option>
-                                        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
-                                        <option value="processing" <%= filters.status === 'processing' ? 'selected' : '' %>>Processing</option>
-                                        <option value="shipped" <%= filters.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="delivered" <%= filters.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="dateFrom" class="form-label">From Date</label>
-                                    <input type="date" class="form-control" id="dateFrom" name="dateFrom" value="<%= filters.dateFrom || '' %>">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="dateTo" class="form-label">To Date</label>
-                                    <input type="date" class="form-control" id="dateTo" name="dateTo" value="<%= filters.dateTo || '' %>">
-                                </div>
-                                <div class="col-md-12 d-flex justify-content-end">
-                                    <div class="btn-group">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-filter"></i> Apply Filters
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
-                                            <i class="bi bi-x-circle"></i> Clear
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Orders List -->
-                <% if (orders && orders.length > 0) { %>
-                    <% orders.forEach(order => { %>
-                        <div class="order-card">
-                            <div class="order-header d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h5 class="mb-1">Order #<%= order.orderNumber || order.id %></h5>
-                                    <small class="text-muted">
-                                        Placed on <%= new Date(order.createdAt).toLocaleDateString() %> at 
-                                        <%= new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
-                                    </small>
-                                </div>
-                                <div class="text-end">
-                                    <div class="mb-1">
-                                        <span class="order-status status-<%= order.status %>">
-                                            <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
-                                        </span>
-                                    </div>
-                                    <div class="h5 mb-0">$<%= order.totalAmount.toFixed(2) %></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Order Items -->
-                            <% if (order.items && order.items.length > 0) { %>
-                                <% order.items.forEach(item => { %>
-                                    <div class="order-item d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <% if (item.image_url) { %>
-                                                <img src="<%= item.image_url %>" alt="<%= item.product_name %>" class="product-image">
-                                            <% } else { %>
-                                                <div class="product-image bg-light d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-image text-muted"></i>
-                                                </div>
-                                            <% } %>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-1"><%= item.product_name %></h6>
-                                            <p class="text-muted mb-1">
-                                                Quantity: <%= item.quantity %> × $<%= item.unit_price.toFixed(2) %>
-                                            </p>
-                                            <% if (item.variants) { %>
-                                                <small class="text-muted">Variants: <%= item.variants %></small>
-                                            <% } %>
-                                        </div>
-                                        <div class="flex-shrink-0 text-end">
-                                            <div class="h6 mb-1">$<%= item.total_price.toFixed(2) %></div>
-                                            <% if (order.status === 'delivered') { %>
-                                                <a href="/products/<%= item.product_slug %>" class="btn btn-sm btn-outline-primary">
-                                                    Buy Again
-                                                </a>
-                                            <% } %>
-                                        </div>
-                                    </div>
-                                <% }) %>
-                            <% } %>
-                            
-                            <!-- Order Actions -->
-                            <div class="order-header d-flex justify-content-between align-items-center">
-                                <div>
-                                    <% if (order.tracking_number) { %>
-                                        <small class="text-muted">
-                                            Tracking: <strong><%= order.tracking_number %></strong>
-                                            <% if (order.tracking_url) { %>
-                                                <a href="<%= order.tracking_url %>" target="_blank" class="ms-2">
-                                                    <i class="bi bi-box-arrow-up-right"></i> Track
-                                                </a>
-                                            <% } %>
-                                        </small>
-                                    <% } %>
-                                </div>
-                                <div class="btn-group">
-                                    <a href="/customer/orders/<%= order.id %>" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-eye me-1"></i> View Details
-                                    </a>
-                                    <% if (order.status === 'delivered') { %>
-                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="showReviewModal('<%= order.id %>')">
-                                            <i class="bi bi-star me-1"></i> Write Review
-                                        </button>
-                                    <% } %>
-                                    <% if (order.status === 'pending' || order.status === 'processing') { %>
-                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="cancelOrder('<%= order.id %>')">
-                                            <i class="bi bi-x-circle me-1"></i> Cancel Order
-                                        </button>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
-                    <% }) %>
-                    
-                    <!-- Pagination -->
-                    <% if (pagination && pagination.totalPages > 1) { %>
-                        <nav class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
-                                    <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&<%= queryString %>">Previous</a>
-                                </li>
-                                
-                                <% for (let i = 1; i <= pagination.totalPages; i++) { %>
-                                    <% if (i === 1 || i === pagination.totalPages || (i >= pagination.currentPage - 2 && i <= pagination.currentPage + 2)) { %>
-                                        <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
-                                            <a class="page-link" href="?page=<%= i %>&<%= queryString %>"><%= i %></a>
-                                        </li>
-                                    <% } else if (i === pagination.currentPage - 3 || i === pagination.currentPage + 3) { %>
-                                        <li class="page-item disabled">
-                                            <span class="page-link">...</span>
-                                        </li>
-                                    <% } %>
-                                <% } %>
-                                
-                                <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
-                                    <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&<%= queryString %>">Next</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    <% } %>
-                <% } else { %>
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="bi bi-bag"></i>
-                        </div>
-                        <h3>No orders yet</h3>
-                        <p class="mb-4">You haven't placed any orders. Start shopping to see your orders here.</p>
-                        <a href="/products" class="btn btn-primary btn-lg">
-                            <i class="bi bi-cart-plus me-2"></i> Start Shopping
-                        </a>
-                    </div>
-                <% } %>
-            </div>
+            <% } %>
         </div>
     </div>
-
-    <!-- Review Modal -->
-    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Write a Review</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="reviewForm">
-                        <input type="hidden" id="reviewOrderId" name="orderId">
-                        <div class="mb-3">
-                            <label class="form-label">Rating</label>
-                            <div class="rating-stars">
-                                <% for (let i = 1; i <= 5; i++) { %>
-                                    <i class="bi bi-star rating-star" data-value="<%= i %>" onclick="setRating('<%= i %>')"></i>
-                                <% } %>
-                            </div>
-                            <input type="hidden" id="ratingValue" name="rating" value="5">
-                        </div>
-                        <div class="mb-3">
-                            <label for="reviewTitle" class="form-label">Review Title</label>
-                            <input type="text" class="form-control" id="reviewTitle" name="title" placeholder="Great product!">
-                        </div>
-                        <div class="mb-3">
-                            <label for="reviewComment" class="form-label">Your Review</label>
-                            <textarea class="form-control" id="reviewComment" name="comment" rows="4" placeholder="Share your experience with this product..."></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="submitReview()">Submit Review</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Reset filters
-        function resetFilters() {
-            document.getElementById('filterForm').reset();
-            document.getElementById('filterForm').submit();
-        }
-
-        // Show review modal
-        function showReviewModal(orderId) {
-            document.getElementById('reviewOrderId').value = orderId;
-            const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
-            modal.show();
-        }
-
-        // Set rating stars
-        function setRating(rating) {
-            document.getElementById('ratingValue').value = rating;
-            const stars = document.querySelectorAll('.rating-star');
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.classList.remove('bi-star');
-                    star.classList.add('bi-star-fill', 'text-warning');
-                } else {
-                    star.classList.remove('bi-star-fill', 'text-warning');
-                    star.classList.add('bi-star');
-                }
-            });
-        }
-
-        // Submit review
-        function submitReview() {
-            const orderId = document.getElementById('reviewOrderId').value;
-            const rating = document.getElementById('ratingValue').value;
-            const title = document.getElementById('reviewTitle').value;
-            const comment = document.getElementById('reviewComment').value;
-            
-            if (!title.trim() || !comment.trim()) {
-                alert('Please fill in both title and comment fields.');
-                return;
-            }
-            
-            // In a real application, you would submit this to the server
-            fetch('/api/reviews', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    orderId: orderId,
-                    rating: parseInt(rating),
-                    title: title,
-                    comment: comment
-                })
-            }).then(response => {
-                if (response.ok) {
-                    alert('Review submitted successfully!');
-                    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
-                } else {
-                    alert('Failed to submit review. Please try again.');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            });
-        }
-
-        // Cancel order
-        function cancelOrder(orderId) {
-            if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
-                return;
-            }
-            
-            fetch(`/customer/orders/${orderId}/cancel`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }).then(response => {
-                if (response.ok) {
-                    alert('Order cancelled successfully.');
-                    location.reload();
-                } else {
-                    alert('Failed to cancel order. Please try again.');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            });
-        }
-
-        // Initialize rating stars on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            setRating(5); // Default to 5 stars
-        });
-    </script>
-</body>
-</html>
+</div>
