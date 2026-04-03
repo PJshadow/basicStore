@@ -15,10 +15,10 @@ const updateImages = async () => {
   console.log('Updating product image URLs in database...');
 
   const updates = [
-    { slug: 'wireless-headphones', imageUrl: '/images/wireless-headphones.png' },
-    { slug: 'smart-watch', imageUrl: '/images/smart-watch.png' },
-    { slug: 'backpack', imageUrl: '/images/backpack.png' },
-    { slug: 'coffee-maker', imageUrl: '/images/coffee-maker.png' }
+    { slug: 'wireless-headphones', imageUrl: '/images/wireless-headphones.webp' },
+    { slug: 'smart-watch', imageUrl: '/images/smart-watch.webp' },
+    { slug: 'backpack', imageUrl: '/images/backpack.webp' },
+    { slug: 'coffee-maker', imageUrl: '/images/coffee-maker.webp' }
   ];
 
   try {
