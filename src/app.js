@@ -76,6 +76,13 @@ app.use((req, res, next) => {
   res.locals.error_msg = req.flash('error_msg');
   res.locals.error = req.flash('error');
   res.locals.currentUser = req.session.user || null;
+  const contactEmail = process.env.CONTACT_EMAIL || 'support@basicstore.com';
+  const whatsappRaw = process.env.WHATSAPP_NUMBER || '+15551234567';
+  const whatsappDigits = whatsappRaw.replace(/\D/g, '');
+  const whatsappMessage = process.env.WHATSAPP_MESSAGE || `Hello ${process.env.APP_NAME || 'BasicStore'} team, I need help with my order.`;
+  res.locals.contactEmail = contactEmail;
+  res.locals.whatsappNumber = whatsappRaw;
+  res.locals.whatsappLink = whatsappDigits ? `https://wa.me/${whatsappDigits}?text=${encodeURIComponent(whatsappMessage)}` : null;
   next();
 });
 
