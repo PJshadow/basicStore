@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS products (
     featured BOOLEAN DEFAULT FALSE,
     active BOOLEAN DEFAULT TRUE,
     image_url VARCHAR(500),
+    image_url_extra VARCHAR(500) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
@@ -162,11 +163,11 @@ INSERT INTO categories (name, slug, description) VALUES
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- Insert sample products
-INSERT INTO products (name, slug, description, short_description, price, category_id, stock_quantity, image_url, featured) VALUES
-('Wireless Headphones', 'wireless-headphones', 'Premium sound quality with noise cancellation', 'Noise-cancelling wireless headphones', 99.99, 1, 50, '/images/wireless-headphones.png', 1),
-('Smart Watch', 'smart-watch', 'Track fitness, receive notifications', 'Fitness tracking smart watch', 199.99, 1, 30, '/images/smart-watch.png', 1),
-('Backpack', 'backpack', 'Durable water-resistant backpack', 'Water-resistant travel backpack', 49.99, 2, 100, '/images/backpack.png', 1),
-('Coffee Maker', 'coffee-maker', 'Programmable 12-cup coffee maker', 'Automatic coffee maker', 79.99, 3, 25, '/images/coffee-maker.png', 1)
+INSERT INTO products (name, slug, description, short_description, price, category_id, stock_quantity, image_url, image_url_extra, featured) VALUES
+('Wireless Headphones', 'wireless-headphones', 'Premium sound quality with noise cancellation', 'Noise-cancelling wireless headphones', 99.99, 1, 50, '/images/wireless-headphones.png', NULL, 1),
+('Smart Watch', 'smart-watch', 'Track fitness, receive notifications', 'Fitness tracking smart watch', 199.99, 1, 30, '/images/smart-watch.png', NULL, 1),
+('Backpack', 'backpack', 'Durable water-resistant backpack', 'Water-resistant travel backpack', 49.99, 2, 100, '/images/backpack.png', NULL, 1),
+('Coffee Maker', 'coffee-maker', 'Programmable 12-cup coffee maker', 'Automatic coffee maker', 79.99, 3, 25, '/images/coffee-maker.png', NULL, 1)
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     description = VALUES(description),

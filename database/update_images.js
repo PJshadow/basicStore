@@ -16,9 +16,9 @@ const updateImages = async () => {
 
   const updates = [
     { slug: 'wireless-headphones', imageUrl: '/images/wireless-headphones.webp' },
-    { slug: 'smart-watch', imageUrl: '/images/smart-watch.webp' },
-    { slug: 'backpack', imageUrl: '/images/backpack.webp' },
-    { slug: 'coffee-maker', imageUrl: '/images/coffee-maker.webp' }
+    { slug: 'smart-watch', imageUrl: '/images/watch2.png' },
+    { slug: 'backpack', imageUrl: '/images/backpack2.png' },
+    { slug: 'coffee-maker', imageUrl: '/images/coffee-maker2.png' }
   ];
 
   try {
