@@ -1,4 +1,10 @@
 import { promisePool } from './db.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Product factory function - returns an object with all product methods
 const createProductModel = () => {
@@ -210,8 +216,22 @@ const createProductModel = () => {
         throw new Error('Cannot delete the main image. Please set another image as main first.');
       }
 
+      const imageUrl = img[0].image_url;
+
       // Delete from database
       await connection.execute('DELETE FROM product_images WHERE id = ?', [imageId]);
+      
+      // Attempt to delete physical file if it's local
+      if (imageUrl.startsWith('/images/')) {
+        const fileName = imageUrl.replace('/images/', '');
+        const filePath = path.join(__dirname, '../public/images', fileName);
+        try {
+          await fs.unlink(filePath);
+        } catch (err) {
+          console.warn(`Could not delete physical file: ${filePath}`, err.message);
+          // Don't throw error here, database record is already gone
+        }
+      }
       
       await connection.commit();
       return true;

@@ -346,13 +346,20 @@ export default {
         price,
         stock_quantity,
         category_id,
-        extra_images
+        delete_images
       } = req.body;
 
       const existingProduct = await Product.findById(id);
       if (!existingProduct) {
         req.flash('error_msg', 'Product not found');
         return res.redirect('/admin/products');
+      }
+
+      // Handle marked deletions
+      if (delete_images && Array.isArray(delete_images)) {
+        for (const imageId of delete_images) {
+          await Product.deleteImage(id, imageId);
+        }
       }
 
       // Collect image URLs
@@ -403,19 +410,6 @@ export default {
     } catch (error) {
       console.error('Set main image error:', error);
       req.flash('error_msg', 'Error setting main image');
-      res.redirect(`/admin/products/${req.params.productId}/edit`);
-    }
-  },
-
-  deleteProductImage: async (req, res) => {
-    try {
-      const { productId, imageId } = req.params;
-      await Product.deleteImage(productId, imageId);
-      req.flash('success_msg', 'Image deleted successfully');
-      res.redirect(`/admin/products/${productId}/edit`);
-    } catch (error) {
-      console.error('Delete product image error:', error);
-      req.flash('error_msg', 'Error deleting image: ' + error.message);
       res.redirect(`/admin/products/${req.params.productId}/edit`);
     }
   },

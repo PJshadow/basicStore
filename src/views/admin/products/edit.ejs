@@ -89,20 +89,28 @@
             <h6 class="fw-bold mb-4">Product Images</h6>
             
             <% if (typeof images !== 'undefined' && images.length > 0) { %>
-                <div class="row g-2 mb-4">
+                <div class="row g-2 mb-4" id="existing-images">
                     <% images.forEach(img => { %>
-                        <div class="col-6 position-relative">
-                            <div class="rounded-3 border overflow-hidden <%= img.is_main ? 'border-primary border-3' : '' %>" style="height: 100px;">
+                        <div class="col-6 position-relative image-thumb" id="img-container-<%= img.id %>">
+                            <div class="rounded-3 border overflow-hidden image-preview-wrapper <%= img.is_main ? 'border-primary border-3' : '' %>" style="height: 100px;">
                                 <img src="<%= img.image_url %>" alt="Product image" class="img-fluid object-fit-cover w-100 h-100">
+                                <div class="delete-overlay d-none position-absolute top-0 start-0 w-100 h-100 bg-danger bg-opacity-50 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-trash text-white fs-4"></i>
+                                </div>
                             </div>
                             
                             <div class="position-absolute top-0 start-0 m-1 d-flex gap-1">
                                 <% if (!img.is_main) { %>
-                                    <button type="button" class="btn btn-sm btn-primary rounded-circle shadow-sm p-1" title="Set as Main" onclick="setMainImage('<%= img.id %>')">
-                                        <i class="fas fa-star x-small"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger rounded-circle shadow-sm p-1" title="Delete Image" onclick="deleteImage('<%= img.id %>')">
-                                        <i class="fas fa-trash x-small"></i>
+                                    <div class="action-buttons">
+                                        <button type="button" class="btn btn-sm btn-primary rounded-circle shadow-sm p-1" title="Set as Main" onclick="setMainImage('<%= img.id %>')">
+                                            <i class="fas fa-star x-small"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger rounded-circle shadow-sm p-1" title="Mark for Deletion" onclick="toggleImageDeletion('<%= img.id %>')">
+                                            <i class="fas fa-trash x-small"></i>
+                                        </button>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-warning rounded-circle shadow-sm p-1 d-none undo-delete" title="Undo Deletion" onclick="toggleImageDeletion('<%= img.id %>')">
+                                        <i class="fas fa-undo x-small"></i>
                                     </button>
                                 <% } else { %>
                                     <span class="badge bg-primary rounded-circle p-1 shadow-sm">
@@ -110,6 +118,7 @@
                                     </span>
                                 <% } %>
                             </div>
+                            <input type="hidden" name="delete_images[]" value="<%= img.id %>" disabled id="delete-input-<%= img.id %>">
                         </div>
                     <% }) %>
                 </div>
@@ -133,13 +142,26 @@
                 form.submit();
             }
 
-            function deleteImage(imageId) {
-                if (confirm('Are you sure you want to delete this image?')) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/admin/products/<%= product.id %>/images/${imageId}?_method=DELETE`;
-                    document.body.appendChild(form);
-                    form.submit();
+            function toggleImageDeletion(imageId) {
+                const container = document.getElementById(`img-container-${imageId}`);
+                const input = document.getElementById(`delete-input-${imageId}`);
+                const overlay = container.querySelector('.delete-overlay');
+                const actionButtons = container.querySelector('.action-buttons');
+                const undoButton = container.querySelector('.undo-delete');
+                const wrapper = container.querySelector('.image-preview-wrapper');
+
+                if (input.disabled) {
+                    input.disabled = false;
+                    overlay.classList.remove('d-none');
+                    actionButtons.classList.add('d-none');
+                    undoButton.classList.remove('d-none');
+                    wrapper.classList.add('opacity-50');
+                } else {
+                    input.disabled = true;
+                    overlay.classList.add('d-none');
+                    actionButtons.classList.remove('d-none');
+                    undoButton.classList.add('d-none');
+                    wrapper.classList.remove('opacity-50');
                 }
             }
 

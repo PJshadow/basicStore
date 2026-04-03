@@ -43,7 +43,6 @@ router.get('/products/:id/edit', adminController.getEditProduct);
 router.put('/products/:id', upload.array('product_images', 10), adminController.updateProduct);
 
 router.post('/products/:productId/images/:imageId/main', adminController.setMainImage);
-router.delete('/products/:productId/images/:imageId', adminController.deleteProductImage);
 
 router.delete('/products/:id', adminController.deleteProduct);
 
