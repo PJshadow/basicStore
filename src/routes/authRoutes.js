@@ -81,7 +81,7 @@ router.post('/register',
     body('username').notEmpty().trim().escape(),
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 6 }),
-    body('confirmPassword').custom((value, { req }) => {
+    body('confirm_password').custom((value, { req }) => {
       if (value !== req.body.password) {
         throw new Error('Passwords do not match');
       }
@@ -98,10 +98,12 @@ router.post('/register',
         return res.redirect('/auth/register');
       }
 
-      const { username, email, password } = req.body;
+      const { username, email, password, first_name, last_name } = req.body;
 
       // Check if user exists
       const User = (await import('../models/User.js')).default;
+      const Customer = (await import('../models/Customer.js')).default;
+      
       const existingUserByEmail = await User.findByEmail(email);
       if (existingUserByEmail) {
         req.flash('error_msg', 'Email already registered');
@@ -116,6 +118,15 @@ router.post('/register',
 
       // Create new user
       const newUser = await User.create({ username, email, password, role: 'customer' });
+
+      // Create associated customer record
+      try {
+        await Customer.create({ first_name, last_name, email });
+      } catch (custError) {
+        console.error('Error creating customer record:', custError);
+        // We don't necessarily want to fail registration if customer record creation fails,
+        // but in a production app we might want to handle this better (e.g. transaction)
+      }
 
       // Set session
       req.session.user = {
