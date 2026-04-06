@@ -72,6 +72,8 @@
                             data-product-id="<%= product.id %>"
                             data-product-name="<%= product.name %>"
                             data-product-price="<%= product.price %>"
+                            data-product-image="<%= (product.images && product.images.length > 0) ? product.images[0] : '' %>"
+                            data-product-stock="<%= product.stock_quantity %>"
                             data-quantity-selector="#product-quantity">
                         <i class="fas fa-cart-plus me-2"></i> Add to Cart
                     </button>

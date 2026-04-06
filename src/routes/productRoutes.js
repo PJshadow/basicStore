@@ -172,18 +172,26 @@ router.post('/:id/add-to-cart', async (req, res) => {
       return res.redirect('back');
     }
 
-    // Check stock
-    if (product.stock_quantity < (parseInt(quantity) || 1)) {
-      req.flash('error_msg', 'Insufficient stock');
+    // Check if product already in cart
+    const existingItemIndex = req.session.cart.findIndex(item => item.productId == id);
+    const currentQuantity = existingItemIndex > -1 ? req.session.cart[existingItemIndex].quantity : 0;
+    const requestedQuantity = parseInt(quantity) || 1;
+
+    // Check stock total
+    if (product.stock_quantity < (currentQuantity + requestedQuantity)) {
+      if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock. Only ${product.stock_quantity} available.`
+        });
+      }
+      req.flash('error_msg', `Insufficient stock. Only ${product.stock_quantity} available.`);
       return res.redirect('back');
     }
 
-    // Check if product already in cart
-    const existingItemIndex = req.session.cart.findIndex(item => item.productId == id);
-    
     if (existingItemIndex > -1) {
       // Update quantity
-      req.session.cart[existingItemIndex].quantity += parseInt(quantity) || 1;
+      req.session.cart[existingItemIndex].quantity += requestedQuantity;
     } else {
       // Add new item
       const cartItem = {
@@ -199,11 +207,94 @@ router.post('/:id/add-to-cart', async (req, res) => {
     }
     
     req.flash('success_msg', 'Product added to cart!');
+    
+    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      return res.json({
+        success: true,
+        message: 'Product added to cart',
+        cartCount: req.session.cart.reduce((total, item) => total + item.quantity, 0)
+      });
+    }
+    
     res.redirect('back');
   } catch (error) {
     console.error('Error adding to cart:', error);
+    
+    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error adding product to cart'
+      });
+    }
+    
     req.flash('error_msg', 'Error adding product to cart');
     res.redirect('back');
+  }
+});
+
+// Update cart quantity
+router.post('/cart/update', async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+    const requestedQuantity = parseInt(quantity);
+    
+    if (!req.session.cart) {
+      return res.status(400).json({ success: false, message: 'Cart not found' });
+    }
+    
+    // Check product stock from DB
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    
+    if (product.stock_quantity < requestedQuantity) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Only ${product.stock_quantity} units available.` 
+      });
+    }
+    
+    const itemIndex = req.session.cart.findIndex(item => item.productId == productId);
+    
+    if (itemIndex > -1) {
+      if (requestedQuantity <= 0) {
+        req.session.cart.splice(itemIndex, 1);
+      } else {
+        req.session.cart[itemIndex].quantity = requestedQuantity;
+      }
+      
+      return res.json({ 
+        success: true, 
+        cartCount: req.session.cart.reduce((total, item) => total + item.quantity, 0)
+      });
+    }
+    
+    res.status(404).json({ success: false, message: 'Item not found in cart' });
+  } catch (error) {
+    console.error('Update cart error:', error);
+    res.status(500).json({ success: false, message: 'Error updating cart' });
+  }
+});
+
+// Remove from cart
+router.post('/cart/remove', (req, res) => {
+  try {
+    const { productId } = req.body;
+    
+    if (!req.session.cart) {
+      return res.status(400).json({ success: false, message: 'Cart not found' });
+    }
+    
+    req.session.cart = req.session.cart.filter(item => item.productId != productId);
+    
+    res.json({ 
+      success: true, 
+      cartCount: req.session.cart.reduce((total, item) => total + item.quantity, 0)
+    });
+  } catch (error) {
+    console.error('Remove from cart error:', error);
+    res.status(500).json({ success: false, message: 'Error removing from cart' });
   }
 });
 
