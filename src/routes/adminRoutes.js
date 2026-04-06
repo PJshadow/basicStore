@@ -47,14 +47,12 @@ router.post('/products/:productId/images/:imageId/main', adminController.setMain
 router.delete('/products/:id', adminController.deleteProduct);
 
 // Categories management
-router.get('/categories', (req, res) => {
-  res.render('admin/products/categories', {
-    title: 'Category Management',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'products'
-  });
-});
+router.get('/categories', adminController.getCategories);
+router.get('/categories/new', adminController.getCreateCategory);
+router.post('/categories', adminController.createCategory);
+router.get('/categories/:id/edit', adminController.getEditCategory);
+router.post('/categories/:id/update', adminController.updateCategory);
+router.post('/categories/:id/delete', adminController.deleteCategory);
 
 // Orders management
 router.get('/orders', (req, res) => {

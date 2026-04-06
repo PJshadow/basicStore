@@ -204,6 +204,99 @@ export default {
     }
   },
 
+  // Category management
+  getCategories: async (req, res) => {
+    try {
+      const categories = await Category.findAll();
+      res.render('admin/categories/list', {
+        title: 'Category Management',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'categories',
+        categories
+      });
+    } catch (error) {
+      console.error('Get categories error:', error);
+      req.flash('error_msg', 'Error fetching categories');
+      res.redirect('/admin');
+    }
+  },
+
+  getCreateCategory: (req, res) => {
+    res.render('admin/categories/create', {
+      title: 'Add New Category',
+      currentUser: req.session.user,
+      sidebar: true,
+      activePage: 'categories'
+    });
+  },
+
+  createCategory: async (req, res) => {
+    const { name, slug, description, parent_id } = req.body;
+    try {
+      if (!name) {
+        req.flash('error_msg', 'Category name is required');
+        return res.redirect('/admin/categories/create');
+      }
+
+      const categorySlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      await Category.create({ name, slug: categorySlug, description, parent_id: parent_id || null });
+
+      req.flash('success_msg', 'Category created successfully');
+      res.redirect('/admin/categories');
+    } catch (error) {
+      console.error('Create category error:', error);
+      req.flash('error_msg', 'Error creating category: ' + error.message);
+      res.redirect('/admin/categories/create');
+    }
+  },
+
+  getEditCategory: async (req, res) => {
+    try {
+      const category = await Category.findById(req.params.id);
+      if (!category) {
+        req.flash('error_msg', 'Category not found');
+        return res.redirect('/admin/categories');
+      }
+      res.render('admin/categories/edit', {
+        title: 'Edit Category',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'categories',
+        category
+      });
+    } catch (error) {
+      console.error('Get edit category error:', error);
+      req.flash('error_msg', 'Error loading category');
+      res.redirect('/admin/categories');
+    }
+  },
+
+  updateCategory: async (req, res) => {
+    const { name, slug, description, parent_id } = req.body;
+    try {
+      await Category.update(req.params.id, { name, slug, description, parent_id: parent_id || null });
+      req.flash('success_msg', 'Category updated successfully');
+      res.redirect('/admin/categories');
+    } catch (error) {
+      console.error('Update category error:', error);
+      req.flash('error_msg', 'Error updating category: ' + error.message);
+      res.redirect(`/admin/categories/${req.params.id}/edit`);
+    }
+  },
+
+  deleteCategory: async (req, res) => {
+    try {
+      await Category.delete(req.params.id);
+      req.flash('success_msg', 'Category deleted successfully');
+      res.redirect('/admin/categories');
+    } catch (error) {
+      console.error('Delete category error:', error);
+      req.flash('error_msg', 'Error deleting category');
+      res.redirect('/admin/categories');
+    }
+  },
+
   // Products management
   getProducts: async (req, res) => {
     try {
