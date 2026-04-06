@@ -8,26 +8,26 @@ const createCouponModel = () => {
       code,
       discount_type,
       discount_value,
-      minimum_order_amount = 0,
-      maximum_discount_amount = null,
+      minimum_order = 0,
+      maximum_discount = null,
       usage_limit = null,
-      usage_limit_per_user = null,
       valid_from = null,
       valid_until = null,
-      active = true
+      active = true,
+      description = null
     } = couponData;
     
     const sql = `
       INSERT INTO coupons 
-      (code, discount_type, discount_value, minimum_order_amount, maximum_discount_amount,
-       usage_limit, usage_limit_per_user, valid_from, valid_until, active)
+      (code, discount_type, discount_value, minimum_order, maximum_discount,
+       usage_limit, valid_from, valid_until, active, description)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     try {
       const [result] = await promisePool.execute(sql, [
-        code, discount_type, discount_value, minimum_order_amount, maximum_discount_amount,
-        usage_limit, usage_limit_per_user, valid_from, valid_until, active
+        code, discount_type, discount_value, minimum_order, maximum_discount,
+        usage_limit, valid_from, valid_until, active, description
       ]);
       return { id: result.insertId, ...couponData };
     } catch (error) {
@@ -65,27 +65,27 @@ const createCouponModel = () => {
       code,
       discount_type,
       discount_value,
-      minimum_order_amount,
-      maximum_discount_amount,
+      minimum_order,
+      maximum_discount,
       usage_limit,
-      usage_limit_per_user,
       valid_from,
       valid_until,
-      active
+      active,
+      description
     } = couponData;
     
     const sql = `
       UPDATE coupons 
-      SET code = ?, discount_type = ?, discount_value = ?, minimum_order_amount = ?,
-          maximum_discount_amount = ?, usage_limit = ?, usage_limit_per_user = ?,
-          valid_from = ?, valid_until = ?, active = ?
+      SET code = ?, discount_type = ?, discount_value = ?, minimum_order = ?,
+          maximum_discount = ?, usage_limit = ?,
+          valid_from = ?, valid_until = ?, active = ?, description = ?
       WHERE id = ?
     `;
     
     try {
       const [result] = await promisePool.execute(sql, [
-        code, discount_type, discount_value, minimum_order_amount, maximum_discount_amount,
-        usage_limit, usage_limit_per_user, valid_from, valid_until, active, id
+        code, discount_type, discount_value, minimum_order, maximum_discount,
+        usage_limit, valid_from, valid_until, active, description, id
       ]);
       return result.affectedRows > 0;
     } catch (error) {
@@ -109,17 +109,15 @@ const createCouponModel = () => {
   const findAll = async (page = 1, limit = 10, activeOnly = false) => {
     const offset = (page - 1) * limit;
     let sql = 'SELECT * FROM coupons';
-    const params = [];
     
     if (activeOnly) {
       sql += ' WHERE active = TRUE AND (valid_until IS NULL OR valid_until >= CURDATE())';
     }
     
-    sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    sql += ` ORDER BY created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
     
     try {
-      const [rows] = await promisePool.execute(sql, params);
+      const [rows] = await promisePool.query(sql);
       return rows;
     } catch (error) {
       throw new Error(`Error finding all coupons: ${error.message}`);
@@ -165,28 +163,21 @@ const createCouponModel = () => {
     }
     
     // Check minimum order amount
-    if (orderAmount < coupon.minimum_order_amount) {
+    if (orderAmount < coupon.minimum_order) {
       return { 
         valid: false, 
-        message: `Minimum order amount of $${coupon.minimum_order_amount} required` 
+        message: `Minimum order amount of $${coupon.minimum_order} required` 
       };
     }
     
     // Check usage limit
-    if (coupon.usage_limit) {
-      const usageCount = await getUsageCount(coupon.id);
-      if (usageCount >= coupon.usage_limit) {
-        return { valid: false, message: 'Coupon usage limit reached' };
-      }
+    const usageCount = await getUsageCount(coupon.id);
+    if (coupon.usage_limit && usageCount >= coupon.usage_limit) {
+      return { valid: false, message: 'Coupon usage limit reached' };
     }
     
-    // Check per-user usage limit
-    if (coupon.usage_limit_per_user && userId) {
-      const userUsageCount = await getUserUsageCount(coupon.id, userId);
-      if (userUsageCount >= coupon.usage_limit_per_user) {
-        return { valid: false, message: 'You have already used this coupon' };
-      }
-    }
+    // Check per-user usage limit (not in schema, so we skip or use a default)
+    // If we wanted per-user, we'd need to check order_coupons joined with orders
     
     // Calculate discount
     let discountAmount = 0;
@@ -195,8 +186,8 @@ const createCouponModel = () => {
       discountAmount = (orderAmount * coupon.discount_value) / 100;
       
       // Apply maximum discount amount if set
-      if (coupon.maximum_discount_amount && discountAmount > coupon.maximum_discount_amount) {
-        discountAmount = coupon.maximum_discount_amount;
+      if (coupon.maximum_discount && discountAmount > coupon.maximum_discount) {
+        discountAmount = coupon.maximum_discount;
       }
     } else if (coupon.discount_type === 'fixed') {
       discountAmount = coupon.discount_value;
@@ -212,7 +203,7 @@ const createCouponModel = () => {
 
   // Get coupon usage count
   const getUsageCount = async (couponId) => {
-    const sql = 'SELECT COUNT(*) as count FROM orders WHERE coupon_id = ?';
+    const sql = 'SELECT COUNT(*) as count FROM order_coupons WHERE coupon_id = ?';
     
     try {
       const [rows] = await promisePool.execute(sql, [couponId]);
@@ -226,8 +217,9 @@ const createCouponModel = () => {
   const getUserUsageCount = async (couponId, userId) => {
     const sql = `
       SELECT COUNT(*) as count 
-      FROM orders 
-      WHERE coupon_id = ? AND customer_id = ?
+      FROM order_coupons oc
+      JOIN orders o ON oc.order_id = o.id
+      WHERE oc.coupon_id = ? AND o.customer_id = ?
     `;
     
     try {
@@ -235,18 +227,6 @@ const createCouponModel = () => {
       return rows[0].count;
     } catch (error) {
       throw new Error(`Error getting user coupon usage count: ${error.message}`);
-    }
-  };
-
-  // Record coupon usage
-  const recordUsage = async (couponId, orderId, customerId) => {
-    const sql = 'UPDATE orders SET coupon_id = ? WHERE id = ?';
-    
-    try {
-      const [result] = await promisePool.execute(sql, [couponId, orderId]);
-      return result.affectedRows > 0;
-    } catch (error) {
-      throw new Error(`Error recording coupon usage: ${error.message}`);
     }
   };
 
@@ -314,7 +294,6 @@ const createCouponModel = () => {
     validate,
     getUsageCount,
     getUserUsageCount,
-    recordUsage,
     getStatistics,
     getExpired,
     getActive

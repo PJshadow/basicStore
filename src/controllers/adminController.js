@@ -562,6 +562,142 @@ export default {
     }
   },
 
+  // Coupons management
+  getCoupons: async (req, res) => {
+    try {
+      const coupons = await Coupon.findAll();
+      
+      const mappedCoupons = coupons.map(c => ({
+        ...c,
+        expiry_date: c.valid_until,
+        used_count: c.used_count || 0
+      }));
+
+      res.render('admin/coupons/list', {
+        title: 'Coupon Management',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'coupons',
+        coupons: mappedCoupons
+      });
+    } catch (error) {
+      console.error('Get coupons error detail:', error);
+      req.flash('error_msg', 'Error fetching coupons: ' + error.message);
+      res.redirect('/admin');
+    }
+  },
+
+  getCreateCoupon: (req, res) => {
+    res.render('admin/coupons/create', {
+      title: 'Create New Coupon',
+      currentUser: req.session.user,
+      sidebar: true,
+      activePage: 'coupons'
+    });
+  },
+
+  createCoupon: async (req, res) => {
+    try {
+      const couponData = {
+        code: req.body.code,
+        discount_type: req.body.discount_type,
+        discount_value: parseFloat(req.body.discount_value),
+        minimum_order: parseFloat(req.body.minimum_order || 0),
+        maximum_discount: req.body.maximum_discount ? parseFloat(req.body.maximum_discount) : null,
+        usage_limit: req.body.usage_limit ? parseInt(req.body.usage_limit) : null,
+        valid_from: req.body.valid_from || null,
+        valid_until: req.body.valid_until || null,
+        active: req.body.active === 'on',
+        description: req.body.description || null
+      };
+
+      // Check if code exists
+      const existing = await Coupon.findByCode(couponData.code);
+      if (existing) {
+        req.flash('error_msg', 'Coupon code already exists');
+        return res.render('admin/coupons/create', {
+          title: 'Create New Coupon',
+          currentUser: req.session.user,
+          sidebar: true,
+          activePage: 'coupons',
+          coupon: req.body
+        });
+      }
+
+      await Coupon.create(couponData);
+      req.flash('success_msg', 'Coupon created successfully');
+      res.redirect('/admin/coupons');
+    } catch (error) {
+      console.error('Create coupon error:', error);
+      req.flash('error_msg', 'Error creating coupon: ' + error.message);
+      res.render('admin/coupons/create', {
+        title: 'Create New Coupon',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'coupons',
+        coupon: req.body
+      });
+    }
+  },
+
+  getEditCoupon: async (req, res) => {
+    try {
+      const coupon = await Coupon.findById(req.params.id);
+      if (!coupon) {
+        req.flash('error_msg', 'Coupon not found');
+        return res.redirect('/admin/coupons');
+      }
+      res.render('admin/coupons/edit', {
+        title: 'Edit Coupon',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'coupons',
+        coupon
+      });
+    } catch (error) {
+      console.error('Get edit coupon error:', error);
+      req.flash('error_msg', 'Error loading coupon');
+      res.redirect('/admin/coupons');
+    }
+  },
+
+  updateCoupon: async (req, res) => {
+    try {
+      const couponData = {
+        code: req.body.code,
+        discount_type: req.body.discount_type,
+        discount_value: parseFloat(req.body.discount_value),
+        minimum_order: parseFloat(req.body.minimum_order || 0),
+        maximum_discount: req.body.maximum_discount ? parseFloat(req.body.maximum_discount) : null,
+        usage_limit: req.body.usage_limit ? parseInt(req.body.usage_limit) : null,
+        valid_from: req.body.valid_from || null,
+        valid_until: req.body.valid_until || null,
+        active: req.body.active === 'on',
+        description: req.body.description || null
+      };
+
+      await Coupon.update(req.params.id, couponData);
+      req.flash('success_msg', 'Coupon updated successfully');
+      res.redirect('/admin/coupons');
+    } catch (error) {
+      console.error('Update coupon error:', error);
+      req.flash('error_msg', 'Error updating coupon: ' + error.message);
+      res.redirect(`/admin/coupons/${req.params.id}/edit`);
+    }
+  },
+
+  deleteCoupon: async (req, res) => {
+    try {
+      await Coupon.delete(req.params.id);
+      req.flash('success_msg', 'Coupon deleted successfully');
+      res.redirect('/admin/coupons');
+    } catch (error) {
+      console.error('Delete coupon error:', error);
+      req.flash('error_msg', 'Error deleting coupon');
+      res.redirect('/admin/coupons');
+    }
+  },
+
   // Get system logs (placeholder - would integrate with logger)
   getSystemLogs: async (req, res) => {
     try {

@@ -95,23 +95,12 @@ router.get('/customers/:id', (req, res) => {
 });
 
 // Coupons management
-router.get('/coupons', (req, res) => {
-  res.render('admin/coupons/list', {
-    title: 'Coupon Management',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'coupons'
-  });
-});
-
-router.get('/coupons/new', (req, res) => {
-  res.render('admin/coupons/create', {
-    title: 'Create New Coupon',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'coupons'
-  });
-});
+router.get('/coupons', adminController.getCoupons);
+router.get('/coupons/new', adminController.getCreateCoupon);
+router.post('/coupons', adminController.createCoupon);
+router.get('/coupons/:id/edit', adminController.getEditCoupon);
+router.put('/coupons/:id', adminController.updateCoupon);
+router.delete('/coupons/:id', adminController.deleteCoupon);
 
 // Reports
 router.get('/reports/sales', (req, res) => {
