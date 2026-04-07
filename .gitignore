@@ -124,7 +124,7 @@ tmp/
 temp/
 
 # Uploads directory (product images)
-# src/public/uploads/*
+src/public/images/*
 
 # IDE files
 .vscode/
