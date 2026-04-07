@@ -58,10 +58,10 @@
                 <% if (typeof search !== 'undefined' && search) { %> for "<span class="fw-bold text-dark"><%= search %></span>"<% } %>
             </p>
             <div class="d-flex gap-2">
-                <select class="form-select form-select-sm border-0 bg-light" style="width: 150px;">
-                    <option>Sort by: Newest</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
+                <select class="form-select form-select-sm border-0 bg-light" style="width: 150px;" onchange="window.location.href = this.value">
+                    <option value="/products?sortBy=created_at&sortOrder=DESC" <%= (typeof sortBy !== 'undefined' && sortBy === 'created_at' && sortOrder === 'DESC') ? 'selected' : '' %>>Sort by: Newest</option>
+                    <option value="/products?sortBy=price&sortOrder=ASC" <%= (typeof sortBy !== 'undefined' && sortBy === 'price' && sortOrder === 'ASC') ? 'selected' : '' %>>Price: Low to High</option>
+                    <option value="/products?sortBy=price&sortOrder=DESC" <%= (typeof sortBy !== 'undefined' && sortBy === 'price' && sortOrder === 'DESC') ? 'selected' : '' %>>Price: High to Low</option>
                 </select>
             </div>
         </div>
