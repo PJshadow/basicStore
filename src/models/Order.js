@@ -316,7 +316,7 @@ const createOrderModel = () => {
   };
 
   // Get order statistics
-  const getStatistics = async (period = 'month') => {
+  const getStatistics = async (period = 'month', startDate = null, endDate = null) => {
     let dateFormat, interval;
     
     switch (period) {
@@ -339,19 +339,41 @@ const createOrderModel = () => {
         break;
     }
     
-    const sql = `
+    let sql = `
       SELECT 
         COUNT(*) as total_orders,
-        SUM(total_amount) as total_revenue,
-        AVG(total_amount) as avg_order_value,
+        IFNULL(SUM(total_amount), 0) as total_revenue,
+        IFNULL(AVG(total_amount), 0) as avg_order_value,
         SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as completed_orders,
-        SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_orders
+        SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_orders,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_orders,
+        SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing_orders,
+        SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) as shipped_orders
       FROM orders
-      WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${interval})
     `;
     
+    const params = [];
+    const whereConditions = [];
+
+    if (startDate && endDate) {
+      whereConditions.push('created_at BETWEEN ? AND ?');
+      params.push(startDate, endDate);
+    } else if (startDate) {
+      whereConditions.push('created_at >= ?');
+      params.push(startDate);
+    } else if (endDate) {
+      whereConditions.push('created_at <= ?');
+      params.push(endDate);
+    } else if (period) {
+      whereConditions.push(`created_at >= DATE_SUB(NOW(), INTERVAL ${interval})`);
+    }
+
+    if (whereConditions.length > 0) {
+      sql += ' WHERE ' + whereConditions.join(' AND ');
+    }
+    
     try {
-      const [rows] = await promisePool.execute(sql);
+      const [rows] = await promisePool.query(sql, params);
       return rows[0];
     } catch (error) {
       throw new Error(`Error getting order statistics: ${error.message}`);

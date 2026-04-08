@@ -207,10 +207,10 @@ const createOrderItemModel = () => {
       LIMIT ?
     `;
     
-    params.push(limit);
+    params.push(parseInt(limit) || 10);
     
     try {
-      const [rows] = await promisePool.execute(sql, params);
+      const [rows] = await promisePool.query(sql, params);
       return rows;
     } catch (error) {
       throw new Error(`Error getting top selling products: ${error.message}`);
@@ -248,10 +248,54 @@ const createOrderItemModel = () => {
     `;
     
     try {
-      const [rows] = await promisePool.execute(sql, params);
+      const [rows] = await promisePool.query(sql, params);
       return rows;
     } catch (error) {
       throw new Error(`Error getting product sales history: ${error.message}`);
+    }
+  };
+
+  // Get sales by category
+  const getSalesByCategory = async (startDate = null, endDate = null) => {
+    let sql = `
+      SELECT 
+        c.id,
+        c.name,
+        SUM(oi.quantity) as total_quantity,
+        SUM(oi.total_price) as total_revenue
+      FROM order_items oi
+      LEFT JOIN products p ON oi.product_id = p.id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN orders o ON oi.order_id = o.id
+    `;
+    
+    const params = [];
+    const whereConditions = [];
+    
+    if (startDate) {
+      whereConditions.push('o.created_at >= ?');
+      params.push(startDate);
+    }
+    
+    if (endDate) {
+      whereConditions.push('o.created_at <= ?');
+      params.push(endDate);
+    }
+    
+    if (whereConditions.length > 0) {
+      sql += ' WHERE ' + whereConditions.join(' AND ');
+    }
+    
+    sql += `
+      GROUP BY c.id, c.name
+      ORDER BY total_revenue DESC
+    `;
+    
+    try {
+      const [rows] = await promisePool.query(sql, params);
+      return rows;
+    } catch (error) {
+      throw new Error(`Error getting sales by category: ${error.message}`);
     }
   };
 
@@ -267,7 +311,8 @@ const createOrderItemModel = () => {
     validateStock,
     getStatistics,
     getTopSellingProducts,
-    getProductSalesHistory
+    getProductSalesHistory,
+    getSalesByCategory
   };
 };
 

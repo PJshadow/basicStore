@@ -1,0 +1,345 @@
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-chart-line me-2"></i> Sales Reports
+    </h1>
+    <div class="btn-group">
+        <button class="btn btn-outline-primary" onclick="window.print()">
+            <i class="fas fa-print me-2"></i> Print Report
+        </button>
+        <button class="btn btn-primary">
+            <i class="fas fa-download me-2"></i> Export Data
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form action="/admin/reports/sales" method="GET" class="row align-items-end">
+            <div class="col-md-3 mb-3 mb-md-0">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="startDate" name="startDate" value="<%= filters.startDate %>">
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="endDate" name="endDate" value="<%= filters.endDate %>">
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <label for="period" class="form-label">Group By</label>
+                <select class="form-select" id="period" name="period">
+                    <option value="day" <%= filters.period === 'day' ? 'selected' : '' %>>Day</option>
+                    <option value="week" <%= filters.period === 'week' ? 'selected' : '' %>>Week</option>
+                    <option value="month" <%= filters.period === 'month' ? 'selected' : '' %>>Month</option>
+                    <option value="year" <%= filters.period === 'year' ? 'selected' : '' %>>Year</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-2"></i> Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Revenue</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">$<%= parseFloat(stats.total_revenue).toLocaleString() %></div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Orders Count</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.total_orders %></div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Avg. Order Value</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">$<%= parseFloat(stats.avg_order_value).toFixed(2) %></div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Completed Orders</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.completed_orders %></div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Revenue Chart -->
+    <div class="col-xl-8 col-lg-7 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Revenue Trend</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales by Category -->
+    <div class="col-xl-4 col-lg-5 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Sales by Category</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-end">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% salesByCategory.forEach(cat => { %>
+                                <tr>
+                                    <td><%= cat.name || 'Uncategorized' %></td>
+                                    <td class="text-end">$<%= parseFloat(cat.total_revenue).toLocaleString() %></td>
+                                </tr>
+                            <% }) %>
+                            <% if (salesByCategory.length === 0) { %>
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">No data available</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Selling Products -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Top Selling Products</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center">Sold</th>
+                                <th class="text-end">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% topProducts.forEach(product => { %>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="<%= product.image_url || '/images/placeholder.webp' %>" alt="" class="rounded me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                            <span class="text-truncate" style="max-width: 150px;"><%= product.name %></span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center"><%= product.total_quantity %></td>
+                                    <td class="text-end">$<%= parseFloat(product.total_revenue).toLocaleString() %></td>
+                                </tr>
+                            <% }) %>
+                            <% if (topProducts.length === 0) { %>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No data available</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+                <a href="/admin/orders" class="small">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th class="text-end">Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% recentOrders.forEach(order => { %>
+                                <tr>
+                                    <td><a href="/admin/orders/<%= order.id %>"><%= order.order_number %></a></td>
+                                    <td><%= order.first_name %> <%= order.last_name %></td>
+                                    <td class="text-end">$<%= parseFloat(order.total_amount).toFixed(2) %></td>
+                                    <td>
+                                        <% 
+                                            let badgeClass = 'bg-secondary';
+                                            if (order.status === 'delivered') badgeClass = 'bg-success';
+                                            if (order.status === 'pending') badgeClass = 'bg-warning';
+                                            if (order.status === 'processing') badgeClass = 'bg-info';
+                                            if (order.status === 'shipped') badgeClass = 'bg-primary';
+                                            if (order.status === 'cancelled') badgeClass = 'bg-danger';
+                                        %>
+                                        <span class="badge <%= badgeClass %> text-capitalize"><%= order.status %></span>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                            <% if (recentOrders.length === 0) { %>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No orders found</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data for JS -->
+<div id="revenue-data" style="display: none;"><%= JSON.stringify(revenueByPeriod) %></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Revenue Chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueDataRaw = document.getElementById('revenue-data').textContent;
+    const revenueData = JSON.parse(revenueDataRaw);
+    
+    // Reverse to show chronological order
+    const labels = revenueData.map(item => item.period).reverse();
+    const data = revenueData.map(item => item.revenue).reverse();
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue',
+                data: data,
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                pointRadius: 3,
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: 'rgba(78, 115, 223, 1)',
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    },
+                    grid: {
+                        color: "rgb(234, 236, 244)",
+                        zeroLineColor: "rgb(234, 236, 244)",
+                        drawBorder: false,
+                        borderDash: [2],
+                        zeroLineBorderDash: [2]
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyColor: "#858796",
+                    titleMarginBottom: 10,
+                    titleColor: '#6e707e',
+                    titleFont: { size: 14 },
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    intersect: false,
+                    mode: 'index',
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return 'Revenue: $' + tooltipItem.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>

@@ -98,14 +98,7 @@ router.put('/coupons/:id', adminController.updateCoupon);
 router.delete('/coupons/:id', adminController.deleteCoupon);
 
 // Reports
-router.get('/reports/sales', (req, res) => {
-  res.render('admin/reports/sales', {
-    title: 'Sales Reports',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'reports'
-  });
-});
+router.get('/reports/sales', adminController.getSalesReports);
 
 router.get('/reports/inventory', (req, res) => {
   res.render('admin/reports/inventory', {

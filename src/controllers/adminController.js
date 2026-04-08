@@ -30,13 +30,13 @@ export default {
         revenueData,
         topProducts
       ] = await Promise.all([
-        Order.getStatistics(startDate, endDate),
+        Order.getStatistics(null, startDate, endDate),
         Product.getStatistics(),
         Customer.count(),
         User.count(),
         Coupon.getStatistics(),
         Order.getRevenueByPeriod('day', 7),
-        OrderItem.getTopSelling(5, startDate, endDate)
+        OrderItem.getTopSellingProducts(5, startDate, endDate)
       ]);
 
       res.status(200).json({
@@ -53,6 +53,44 @@ export default {
     } catch (error) {
       console.error('Get dashboard stats error:', error);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  // Get sales reports for the view
+  getSalesReports: async (req, res) => {
+    try {
+      const { startDate, endDate, period = 'month' } = req.query;
+
+      const [
+        stats,
+        revenueByPeriod,
+        topProducts,
+        salesByCategory,
+        recentOrders
+      ] = await Promise.all([
+        Order.getStatistics(period, startDate, endDate),
+        Order.getRevenueByPeriod(period, 12),
+        OrderItem.getTopSellingProducts(10, startDate, endDate),
+        OrderItem.getSalesByCategory(startDate, endDate),
+        Order.findAll({ limit: 10 })
+      ]);
+
+      res.render('admin/reports/sales', {
+        title: 'Sales Reports',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'reports',
+        stats,
+        revenueByPeriod,
+        topProducts,
+        salesByCategory,
+        recentOrders,
+        filters: { startDate, endDate, period }
+      });
+    } catch (error) {
+      console.error('Get sales reports error:', error);
+      req.flash('error_msg', 'Error generating sales reports');
+      res.redirect('/admin');
     }
   },
 
