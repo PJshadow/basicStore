@@ -1,10 +1,18 @@
 -- BasicStore Database Schema
--- Version: 1.0
--- Created: 2026-03-17
+-- Version: 1.1
+-- Updated to include DROP TABLE statements for clean re-initialization
 
--- Create database if not exists
-CREATE DATABASE IF NOT EXISTS basicStore;
-USE basicStore;
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS email_logs;
+DROP TABLE IF EXISTS order_coupons;
+DROP TABLE IF EXISTS coupons;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS users;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- Users table (for admin authentication)
 CREATE TABLE IF NOT EXISTS users (
@@ -176,5 +184,6 @@ ON DUPLICATE KEY UPDATE
     category_id = VALUES(category_id),
     stock_quantity = VALUES(stock_quantity),
     image_url = VALUES(image_url),
+    image_url_extra = VALUES(image_url_extra),
     featured = VALUES(featured),
     updated_at = CURRENT_TIMESTAMP;
