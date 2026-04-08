@@ -35,13 +35,13 @@ const createOrderModel = () => {
       // Insert order
       const orderSql = `
         INSERT INTO orders 
-        (order_number, customer_id, status, subtotal, tax_amount, shipping_amount, 
+        (order_number, customer_id, status, subtotal, discount_amount, tax_amount, shipping_amount, 
          total_amount, payment_method, shipping_address, billing_address, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       
       const [orderResult] = await connection.execute(orderSql, [
-        order_number, customer_id, status, subtotal, tax_amount, shipping_amount,
+        order_number, customer_id, status, subtotal, orderData.discount_amount || 0, tax_amount, shipping_amount,
         total_amount, payment_method, shipping_address, billing_address, notes
       ]);
       
@@ -93,10 +93,13 @@ const createOrderModel = () => {
       SELECT o.*, 
              c.first_name, c.last_name, c.email, c.phone,
              COUNT(oi.id) as item_count,
-             SUM(oi.total_price) as items_total
+             SUM(oi.total_price) as items_total,
+             cp.code as coupon_code
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN order_coupons oc ON o.id = oc.order_id
+      LEFT JOIN coupons cp ON oc.coupon_id = cp.id
       WHERE o.id = ?
       GROUP BY o.id
     `;
@@ -113,9 +116,12 @@ const createOrderModel = () => {
   const findByOrderNumber = async (orderNumber) => {
     const sql = `
       SELECT o.*, 
-             c.first_name, c.last_name, c.email, c.phone
+             c.first_name, c.last_name, c.email, c.phone,
+             cp.code as coupon_code
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
+      LEFT JOIN order_coupons oc ON o.id = oc.order_id
+      LEFT JOIN coupons cp ON oc.coupon_id = cp.id
       WHERE o.order_number = ?
     `;
     
@@ -162,7 +168,7 @@ const createOrderModel = () => {
     
     const sql = `
       UPDATE orders 
-      SET customer_id = ?, status = ?, subtotal = ?, tax_amount = ?, shipping_amount = ?,
+      SET customer_id = ?, status = ?, subtotal = ?, discount_amount = ?, tax_amount = ?, shipping_amount = ?,
           total_amount = ?, payment_method = ?, shipping_address = ?, billing_address = ?,
           notes = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -170,7 +176,7 @@ const createOrderModel = () => {
     
     try {
       const [result] = await promisePool.execute(sql, [
-        customer_id, status, subtotal, tax_amount, shipping_amount,
+        customer_id, status, subtotal, orderData.discount_amount || 0, tax_amount, shipping_amount,
         total_amount, payment_method, shipping_address, billing_address, notes, id
       ]);
       return result.affectedRows > 0;
@@ -206,10 +212,13 @@ const createOrderModel = () => {
       SELECT o.*, 
              c.first_name, c.last_name, c.email,
              COUNT(oi.id) as item_count,
-             SUM(oi.total_price) as items_total
+             SUM(oi.total_price) as items_total,
+             cp.code as coupon_code
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN order_coupons oc ON o.id = oc.order_id
+      LEFT JOIN coupons cp ON oc.coupon_id = cp.id
     `;
     
     const params = [];

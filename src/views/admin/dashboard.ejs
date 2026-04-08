@@ -181,6 +181,7 @@
                                 <th>Order ID</th>
                                 <th>Customer</th>
                                 <th>Date</th>
+                                <th>Discount</th>
                                 <th>Amount</th>
                                 <th>Status</th>
                                 <th>Action</th>
@@ -193,6 +194,16 @@
                                         <td>#<%= order.order_number %></td>
                                         <td><%= order.first_name %> <%= order.last_name %></td>
                                         <td><%= new Date(order.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <% if (order.discount_amount > 0) { %>
+                                                <span class="text-danger">-$<%= order.discount_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) %></span>
+                                                <% if (order.coupon_code) { %>
+                                                    <br><small class="text-muted">(<%= order.coupon_code %>)</small>
+                                                <% } %>
+                                            <% } else { %>
+                                                <span class="text-muted">$0.00</span>
+                                            <% } %>
+                                        </td>
                                         <td>$<%= order.total_amount.toLocaleString() %></td>
                                         <td>
                                             <span class="order-status-badge badge bg-<%= 

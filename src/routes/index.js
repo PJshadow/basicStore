@@ -59,7 +59,7 @@ router.get('/cart', (req, res) => {
 });
 
 // Checkout page
-router.get('/checkout', (req, res) => {
+router.get('/checkout', async (req, res) => {
   const cartItems = req.session.cart || [];
   if (cartItems.length === 0) {
     req.flash('error_msg', 'Your cart is empty');
@@ -68,12 +68,76 @@ router.get('/checkout', (req, res) => {
 
   const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   
+  let customerInfo = null;
+  if (req.session.user && req.session.user.email) {
+    try {
+      customerInfo = await Customer.findByEmail(req.session.user.email);
+    } catch (error) {
+      console.error('Error fetching customer info for checkout:', error);
+    }
+  }
+
+  // Get applied coupon from session
+  const appliedCoupon = req.session.appliedCoupon || null;
+  let discountAmount = 0;
+  if (appliedCoupon) {
+    discountAmount = appliedCoupon.discountAmount;
+  }
+
   res.render('home/checkout', {
     title: 'Checkout',
     currentUser: req.session.user || null,
+    customerInfo,
     cartItems,
-    subtotal
+    subtotal,
+    appliedCoupon,
+    discountAmount
   });
+});
+
+// Apply coupon
+router.post('/checkout/apply-coupon', async (req, res) => {
+  try {
+    const { couponCode } = req.body;
+    const cartItems = req.session.cart || [];
+    const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+    if (!couponCode) {
+      req.flash('error_msg', 'Please enter a coupon code');
+      return res.redirect('/checkout');
+    }
+
+    const Coupon = (await import('../models/Coupon.js')).default;
+    const validation = await Coupon.validate(couponCode, req.session.userId, subtotal);
+
+    if (!validation.valid) {
+      req.flash('error_msg', validation.message);
+      return res.redirect('/checkout');
+    }
+
+    // Store coupon in session
+    req.session.appliedCoupon = {
+      id: validation.coupon.id,
+      code: validation.coupon.code,
+      discountAmount: validation.discountAmount,
+      discountType: validation.coupon.discount_type,
+      discountValue: validation.coupon.discount_value
+    };
+
+    req.flash('success_msg', 'Coupon applied successfully!');
+    res.redirect('/checkout');
+  } catch (error) {
+    console.error('Error applying coupon:', error);
+    req.flash('error_msg', 'Error applying coupon');
+    res.redirect('/checkout');
+  }
+});
+
+// Remove coupon
+router.post('/checkout/remove-coupon', (req, res) => {
+  delete req.session.appliedCoupon;
+  req.flash('success_msg', 'Coupon removed');
+  res.redirect('/checkout');
 });
 
 // Process checkout
@@ -132,9 +196,23 @@ router.post('/checkout', async (req, res) => {
     }
 
     const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    
+    // Calculate discount if coupon applied
+    let discount_amount = 0;
+    let appliedCouponId = null;
+    if (req.session.appliedCoupon) {
+      // Re-validate coupon to be sure
+      const Coupon = (await import('../models/Coupon.js')).default;
+      const validation = await Coupon.validate(req.session.appliedCoupon.code, customer.id, subtotal);
+      if (validation.valid) {
+        discount_amount = validation.discountAmount;
+        appliedCouponId = validation.coupon.id;
+      }
+    }
+
     const shipping_amount = 0; // Free shipping
     const tax_amount = 0; // Simplified
-    const total_amount = subtotal + shipping_amount + tax_amount;
+    const total_amount = subtotal - discount_amount + shipping_amount + tax_amount;
 
     // Prepare order items
     const items = cartItems.map(item => ({
@@ -152,6 +230,7 @@ router.post('/checkout', async (req, res) => {
       tax_amount,
       shipping_amount,
       total_amount,
+      discount_amount, // Make sure Order.create handles this if it exists in schema, otherwise we might need to update Order.create
       payment_method: paymentMethod || 'card',
       shipping_address: `${fullAddress}, ${city}, ${state} ${zip_code}`,
       billing_address: `${fullAddress}, ${city}, ${state} ${zip_code}`,
@@ -160,18 +239,18 @@ router.post('/checkout', async (req, res) => {
 
     const newOrder = await Order.create(orderData);
 
-    // Send order confirmation email
-    try {
-      const itemsWithDetails = await Order.getItems(newOrder.id);
-      const orderWithItems = { ...newOrder, items: itemsWithDetails };
-      await emailService.sendOrderConfirmation(orderWithItems, customer);
-      console.log('✅ Order confirmation email sent to:', customer.email);
-    } catch (e) {
-      console.error('❌ Failed to send order confirmation email:', e);
+    // Record coupon usage if applied
+    if (appliedCouponId) {
+      const { promisePool } = await import('../models/db.js');
+      await promisePool.execute(
+        'INSERT INTO order_coupons (order_id, coupon_id, discount_applied) VALUES (?, ?, ?)',
+        [newOrder.id, appliedCouponId, discount_amount]
+      );
     }
 
-    // Clear cart
+    // Clear cart and coupon
     req.session.cart = [];
+    delete req.session.appliedCoupon;
 
     req.flash('success_msg', `Order placed successfully! Your order number is ${newOrder.order_number}`);
     res.redirect('/');

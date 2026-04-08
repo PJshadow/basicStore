@@ -14,6 +14,7 @@
                             <tr class="small text-uppercase fw-bold text-muted">
                                 <th class="px-4 py-3 border-0">Order</th>
                                 <th class="py-3 border-0">Date</th>
+                                <th class="py-3 border-0">Discount</th>
                                 <th class="py-3 border-0">Status</th>
                                 <th class="py-3 border-0 text-end">Total</th>
                                 <th class="px-4 py-3 border-0"></th>
@@ -24,6 +25,16 @@
                                 <tr>
                                     <td class="px-4 py-3 fw-bold text-dark">#<%= order.order_number || order.id %></td>
                                     <td class="py-3 text-muted"><%= new Date(order.created_at).toLocaleDateString() %></td>
+                                    <td class="py-3">
+                                        <% if (order.discount_amount > 0) { %>
+                                            <span class="text-danger fw-semibold">-$<%= order.discount_amount %></span>
+                                            <% if (order.coupon_code) { %>
+                                                <div class="small text-muted">(<%= order.coupon_code %>)</div>
+                                            <% } %>
+                                        <% } else { %>
+                                            <span class="text-muted">$0.00</span>
+                                        <% } %>
+                                    </td>
                                     <td class="py-3">
                                         <% 
                                             let statusClass = 'bg-secondary-subtle text-secondary';

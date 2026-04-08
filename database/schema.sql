@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS orders (
     customer_id INT NOT NULL,
     status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending',
     subtotal DECIMAL(10, 2) NOT NULL,
+    discount_amount DECIMAL(10, 2) DEFAULT 0,
     tax_amount DECIMAL(10, 2) DEFAULT 0,
     shipping_amount DECIMAL(10, 2) DEFAULT 0,
     total_amount DECIMAL(10, 2) NOT NULL,
