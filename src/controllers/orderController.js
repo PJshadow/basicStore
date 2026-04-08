@@ -7,6 +7,7 @@ import Customer from '../models/Customer.js';
 import Product from '../models/Product.js';
 import Coupon from '../models/Coupon.js';
 import { validationResult } from 'express-validator';
+import emailService from '../utils/emailService.js';
 
 export default {
   // GET Admin Orders (for EJS view)
@@ -173,6 +174,15 @@ export default {
 
       // Get full order details with items
       const orderWithItems = await Order.getWithItems(newOrder.id);
+      console.log('DEBUG: Attempting to send order confirmation email for order ID:', newOrder.id);
+
+      // Send order confirmation email
+      try {
+        await emailService.sendOrderConfirmation(orderWithItems, customer);
+        console.log('✅ Order confirmation email sent to:', customer.email);
+      } catch (e) {
+        console.error('❌ Failed to send order confirmation email:', e);
+      }
 
       res.status(201).json({
         message: 'Order created successfully',

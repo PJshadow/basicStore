@@ -4,6 +4,7 @@
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 import { validationResult } from 'express-validator';
+import emailService from '../utils/emailService.js';
 
 export default {
   // Login user
@@ -70,6 +71,14 @@ export default {
       // Create new user
       const newUser = await User.create({ username, email, password, role });
 
+      // Send welcome email
+      try {
+        await emailService.sendWelcomeEmail(newUser);
+        console.log('✅ Welcome email sent to:', newUser.email);
+      } catch (e) {
+        console.error('❌ Failed to send welcome email:', e);
+      }
+
       // Set session
       req.session.userId = newUser.id;
       req.session.userRole = newUser.role;
@@ -123,13 +132,15 @@ export default {
       }
 
       // Generate reset token (in a real app, you would generate a JWT token and send email)
-      // For now, we'll just return a success message
       const resetToken = require('crypto').randomBytes(32).toString('hex');
       
-      // In a real application, you would:
-      // 1. Save reset token to database with expiration
-      // 2. Send email with reset link
-      // 3. Return success message
+      // Send password reset email
+      try {
+        await emailService.sendPasswordResetEmail(user, resetToken);
+        console.log('✅ Password reset email sent to:', user.email);
+      } catch (e) {
+        console.error('❌ Failed to send password reset email:', e);
+      }
 
       res.status(200).json({ 
         message: 'Password reset instructions sent to your email',

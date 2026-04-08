@@ -3,6 +3,7 @@ import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
 import Customer from '../models/Customer.js';
+import emailService from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -158,6 +159,16 @@ router.post('/checkout', async (req, res) => {
     };
 
     const newOrder = await Order.create(orderData);
+
+    // Send order confirmation email
+    try {
+      const itemsWithDetails = await Order.getItems(newOrder.id);
+      const orderWithItems = { ...newOrder, items: itemsWithDetails };
+      await emailService.sendOrderConfirmation(orderWithItems, customer);
+      console.log('✅ Order confirmation email sent to:', customer.email);
+    } catch (e) {
+      console.error('❌ Failed to send order confirmation email:', e);
+    }
 
     // Clear cart
     req.session.cart = [];
