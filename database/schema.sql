@@ -3,6 +3,7 @@
 -- Updated to include DROP TABLE statements for clean re-initialization
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS product_images;
 DROP TABLE IF EXISTS email_logs;
 DROP TABLE IF EXISTS order_coupons;
 DROP TABLE IF EXISTS coupons;
@@ -69,10 +70,19 @@ CREATE TABLE IF NOT EXISTS products (
     featured BOOLEAN DEFAULT FALSE,
     active BOOLEAN DEFAULT TRUE,
     image_url VARCHAR(500),
-    image_url_extra VARCHAR(500) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- Product images table
+CREATE TABLE IF NOT EXISTS product_images (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    is_main BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
 -- Orders table
@@ -171,11 +181,11 @@ INSERT INTO categories (name, slug, description) VALUES
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- Insert sample products
-INSERT INTO products (name, slug, description, short_description, price, category_id, stock_quantity, image_url, image_url_extra, featured) VALUES
-('Wireless Headphones', 'wireless-headphones', 'Premium sound quality with noise cancellation', 'Noise-cancelling wireless headphones', 99.99, 1, 50, '/images/wireless-headphones.png', NULL, 1),
-('Smart Watch', 'smart-watch', 'Track fitness, receive notifications', 'Fitness tracking smart watch', 199.99, 1, 30, '/images/smart-watch.png', NULL, 1),
-('Backpack', 'backpack', 'Durable water-resistant backpack', 'Water-resistant travel backpack', 49.99, 2, 100, '/images/backpack.png', NULL, 1),
-('Coffee Maker', 'coffee-maker', 'Programmable 12-cup coffee maker', 'Automatic coffee maker', 79.99, 3, 25, '/images/coffee-maker.png', NULL, 1)
+INSERT INTO products (name, slug, description, short_description, price, category_id, stock_quantity, image_url, featured) VALUES
+('Wireless Headphones', 'wireless-headphones', 'Premium sound quality with noise cancellation', 'Noise-cancelling wireless headphones', 99.99, 1, 50, '/images/wireless-headphones.png', 1),
+('Smart Watch', 'smart-watch', 'Track fitness, receive notifications', 'Fitness tracking smart watch', 199.99, 1, 30, '/images/smart-watch.png', 1),
+('Backpack', 'backpack', 'Durable water-resistant backpack', 'Water-resistant travel backpack', 49.99, 2, 100, '/images/backpack.png', 1),
+('Coffee Maker', 'coffee-maker', 'Programmable 12-cup coffee maker', 'Automatic coffee maker', 79.99, 3, 25, '/images/coffee-maker.png', 1)
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     description = VALUES(description),
@@ -184,6 +194,12 @@ ON DUPLICATE KEY UPDATE
     category_id = VALUES(category_id),
     stock_quantity = VALUES(stock_quantity),
     image_url = VALUES(image_url),
-    image_url_extra = VALUES(image_url_extra),
     featured = VALUES(featured),
     updated_at = CURRENT_TIMESTAMP;
+
+-- Insert sample product images
+INSERT INTO product_images (product_id, image_url, is_main) VALUES
+(1, '/images/wireless-headphones.png', TRUE),
+(2, '/images/smart-watch.png', TRUE),
+(3, '/images/backpack.png', TRUE),
+(4, '/images/coffee-maker.png', TRUE);
