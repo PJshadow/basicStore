@@ -23,14 +23,7 @@ const isAdmin = (req, res, next) => {
 router.use(isAdmin);
 
 // Admin dashboard
-router.get('/', (req, res) => {
-  res.render('admin/dashboard', {
-    title: 'Admin Dashboard',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'dashboard'
-  });
-});
+router.get('/', adminController.getDashboard);
 
 // Products management
 router.get('/products', adminController.getProducts);

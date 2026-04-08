@@ -2,20 +2,18 @@
 // Admin Dashboard
 %>
 
-
-
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 mb-0">
         <i class="fas fa-tachometer-alt me-2"></i> Dashboard
     </h1>
     <div class="btn-group">
-        <button class="btn btn-outline-primary">
-            <i class="fas fa-download me-2"></i> Export Report
-        </button>
-        <button class="btn btn-primary">
+        <a href="/admin/reports/sales" class="btn btn-outline-primary">
+            <i class="fas fa-download me-2"></i> Sales Report
+        </a>
+        <a href="/admin/products/new" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i> Add Product
-        </button>
+        </a>
     </div>
 </div>
 
@@ -29,12 +27,9 @@
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                             Total Revenue
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">$24,580</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">$<%= stats.revenue.toLocaleString('en-US', { minimumFractionDigits: 2 }) %></div>
                         <div class="mt-2 mb-0 text-muted text-xs">
-                            <span class="text-success mr-2">
-                                <i class="fas fa-arrow-up"></i> 12.5%
-                            </span>
-                            <span>Since last month</span>
+                            <span>Current Month</span>
                         </div>
                     </div>
                     <div class="col-auto">
@@ -53,12 +48,9 @@
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                             Total Orders
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">1,248</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.orders %></div>
                         <div class="mt-2 mb-0 text-muted text-xs">
-                            <span class="text-success mr-2">
-                                <i class="fas fa-arrow-up"></i> 8.3%
-                            </span>
-                            <span>Since last month</span>
+                            <span>Total processed</span>
                         </div>
                     </div>
                     <div class="col-auto">
@@ -77,12 +69,9 @@
                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                             Total Customers
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">892</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.customers %></div>
                         <div class="mt-2 mb-0 text-muted text-xs">
-                            <span class="text-success mr-2">
-                                <i class="fas fa-arrow-up"></i> 5.2%
-                            </span>
-                            <span>Since last month</span>
+                            <span>Registered customers</span>
                         </div>
                     </div>
                     <div class="col-auto">
@@ -101,12 +90,9 @@
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                             Low Stock Items
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.lowStock %></div>
                         <div class="mt-2 mb-0 text-muted text-xs">
-                            <span class="text-danger mr-2">
-                                <i class="fas fa-arrow-down"></i> 3.1%
-                            </span>
-                            <span>Since last month</span>
+                            <span>Items needing restock</span>
                         </div>
                     </div>
                     <div class="col-auto">
@@ -157,56 +143,22 @@
             </div>
             <div class="card-body">
                 <div class="activity-feed">
-                    <div class="activity-item d-flex mb-3">
-                        <div class="activity-icon bg-primary text-white rounded-circle p-2 me-3">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">New Order #ORD-1001</h6>
-                            <p class="text-muted mb-0">John Doe placed a new order</p>
-                            <small class="text-muted">10 minutes ago</small>
-                        </div>
-                    </div>
-                    <div class="activity-item d-flex mb-3">
-                        <div class="activity-icon bg-success text-white rounded-circle p-2 me-3">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">New Customer Registered</h6>
-                            <p class="text-muted mb-0">Jane Smith created an account</p>
-                            <small class="text-muted">45 minutes ago</small>
-                        </div>
-                    </div>
-                    <div class="activity-item d-flex mb-3">
-                        <div class="activity-icon bg-warning text-white rounded-circle p-2 me-3">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">Low Stock Alert</h6>
-                            <p class="text-muted mb-0">Wireless Headphones stock below threshold</p>
-                            <small class="text-muted">2 hours ago</small>
-                        </div>
-                    </div>
-                    <div class="activity-item d-flex mb-3">
-                        <div class="activity-icon bg-info text-white rounded-circle p-2 me-3">
-                            <i class="fas fa-tag"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">New Coupon Created</h6>
-                            <p class="text-muted mb-0">"SUMMER25" coupon added</p>
-                            <small class="text-muted">5 hours ago</small>
-                        </div>
-                    </div>
-                    <div class="activity-item d-flex">
-                        <div class="activity-icon bg-danger text-white rounded-circle p-2 me-3">
-                            <i class="fas fa-shipping-fast"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">Order Shipped</h6>
-                            <p class="text-muted mb-0">Order #ORD-0998 has been shipped</p>
-                            <small class="text-muted">Yesterday</small>
-                        </div>
-                    </div>
+                    <% if (recentActivity && recentActivity.length > 0) { %>
+                        <% recentActivity.forEach(activity => { %>
+                            <div class="activity-item d-flex mb-3">
+                                <div class="activity-icon bg-<%= activity.color %> text-white rounded-circle me-3">
+                                    <i class="fas fa-<%= activity.icon %>"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0"><%= activity.message %></h6>
+                                    <p class="text-muted mb-0"><%= activity.detail %></p>
+                                    <small class="text-muted"><%= new Date(activity.time).toLocaleString() %></small>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-muted text-center">No recent activity</p>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -235,76 +187,33 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>#ORD-1001</td>
-                                <td>John Doe</td>
-                                <td>Mar 16, 2026</td>
-                                <td>$249.99</td>
-                                <td>
-                                    <span class="order-status-badge badge bg-warning">Processing</span>
-                                </td>
-                                <td>
-                                    <a href="/admin/orders/1001" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#ORD-1000</td>
-                                <td>Jane Smith</td>
-                                <td>Mar 15, 2026</td>
-                                <td>$129.99</td>
-                                <td>
-                                    <span class="order-status-badge badge bg-success">Shipped</span>
-                                </td>
-                                <td>
-                                    <a href="/admin/orders/1000" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#ORD-0999</td>
-                                <td>Robert Johnson</td>
-                                <td>Mar 14, 2026</td>
-                                <td>$89.99</td>
-                                <td>
-                                    <span class="order-status-badge badge bg-primary">Delivered</span>
-                                </td>
-                                <td>
-                                    <a href="/admin/orders/0999" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#ORD-0998</td>
-                                <td>Sarah Williams</td>
-                                <td>Mar 13, 2026</td>
-                                <td>$199.99</td>
-                                <td>
-                                    <span class="order-status-badge badge bg-info">Pending</span>
-                                </td>
-                                <td>
-                                    <a href="/admin/orders/0998" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#ORD-0997</td>
-                                <td>Michael Brown</td>
-                                <td>Mar 12, 2026</td>
-                                <td>$59.99</td>
-                                <td>
-                                    <span class="order-status-badge badge bg-danger">Cancelled</span>
-                                </td>
-                                <td>
-                                    <a href="/admin/orders/0997" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
+                            <% if (recentOrders && recentOrders.length > 0) { %>
+                                <% recentOrders.forEach(order => { %>
+                                    <tr>
+                                        <td>#<%= order.order_number %></td>
+                                        <td><%= order.first_name %> <%= order.last_name %></td>
+                                        <td><%= new Date(order.created_at).toLocaleDateString() %></td>
+                                        <td>$<%= order.total_amount.toLocaleString() %></td>
+                                        <td>
+                                            <span class="order-status-badge badge bg-<%= 
+                                                order.status === 'delivered' ? 'success' : 
+                                                (order.status === 'pending' ? 'info' : 
+                                                (order.status === 'processing' ? 'warning' : 
+                                                (order.status === 'cancelled' ? 'danger' : 'secondary'))) 
+                                            %>"><%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %></span>
+                                        </td>
+                                        <td>
+                                            <a href="/admin/orders/<%= order.id %>" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="text-center">No recent orders found</td>
+                                </tr>
+                            <% } %>
                         </tbody>
                     </table>
                 </div>
@@ -312,4 +221,3 @@
         </div>
     </div>
 </div>
-

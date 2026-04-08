@@ -10,7 +10,99 @@ import Coupon from '../models/Coupon.js';
 import OrderItem from '../models/OrderItem.js';
 
 export default {
-  // Get dashboard statistics
+  // Get dashboard view with statistics
+  getDashboard: async (req, res) => {
+    try {
+      const [
+        orderStats,
+        productStats,
+        customerCount,
+        recentOrdersList,
+        recentCustomersList,
+        lowStockProductsList
+      ] = await Promise.all([
+        Order.getStatistics('month'),
+        Product.getStatistics(),
+        Customer.count(),
+        Order.findAll({ limit: 5 }),
+        Customer.findAll(1, 5),
+        Product.getLowStock(5)
+      ]);
+
+      const activities = [];
+
+      // Add orders to activity
+      recentOrdersList.forEach(order => {
+        activities.push({
+          type: 'order',
+          message: `New Order #${order.order_number}`,
+          detail: `${order.first_name} ${order.last_name} placed an order`,
+          time: order.created_at,
+          icon: 'shopping-cart',
+          color: 'primary'
+        });
+      });
+
+      // Add new customers to activity
+      recentCustomersList.forEach(customer => {
+        activities.push({
+          type: 'customer',
+          message: 'New Customer Registered',
+          detail: `${customer.first_name} ${customer.last_name} created an account`,
+          time: customer.created_at,
+          icon: 'user-plus',
+          color: 'success'
+        });
+      });
+
+      // Add low stock alerts to activity
+      lowStockProductsList.forEach(product => {
+        activities.push({
+          type: 'alert',
+          message: 'Low Stock Alert',
+          detail: `${product.name} is down to ${product.stock_quantity} units`,
+          time: product.updated_at || product.created_at,
+          icon: 'exclamation-triangle',
+          color: 'warning'
+        });
+      });
+
+      // Sort activities by time descending
+      activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+      // Limit to top 5
+      const recentActivity = activities.slice(0, 5);
+
+      res.render('admin/dashboard', {
+        title: 'Admin Dashboard',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'dashboard',
+        stats: {
+          revenue: orderStats.total_revenue || 0,
+          orders: orderStats.total_orders || 0,
+          customers: customerCount || 0,
+          lowStock: productStats.low_stock_count || 0
+        },
+        recentOrders: recentOrdersList,
+        recentActivity
+      });
+    } catch (error) {
+      console.error('Get dashboard error:', error);
+      req.flash('error_msg', 'Error loading dashboard data');
+      res.render('admin/dashboard', {
+        title: 'Admin Dashboard',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'dashboard',
+        stats: { revenue: 0, orders: 0, customers: 0, lowStock: 0 },
+        recentOrders: [],
+        recentActivity: []
+      });
+    }
+  },
+
+  // Get dashboard statistics (API)
   getDashboardStats: async (req, res) => {
     try {
       // Check admin authentication

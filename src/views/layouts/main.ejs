@@ -40,6 +40,10 @@
                 <!-- Content Area -->
                 <div class="col-lg-9">
                     <%- body %>
+                    
+                    <% if (activePage === 'dashboard') { %>
+                        <%- include('../partials/example-dashboard') %>
+                    <% } %>
                 </div>
             <% } else { %>
                 <!-- Full Width Content -->
