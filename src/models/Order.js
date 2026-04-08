@@ -248,7 +248,7 @@ const createOrderModel = () => {
     params.push(limit, offset);
     
     try {
-      const [rows] = await promisePool.execute(sql, params);
+      const [rows] = await promisePool.query(sql, params);
       return rows;
     } catch (error) {
       throw new Error(`Error finding all orders: ${error.message}`);
@@ -392,7 +392,7 @@ const createOrderModel = () => {
     `;
     
     try {
-      const [rows] = await promisePool.execute(sql, [dateFormat, limit]);
+      const [rows] = await promisePool.query(sql, [dateFormat, limit]);
       return rows;
     } catch (error) {
       throw new Error(`Error getting revenue by period: ${error.message}`);

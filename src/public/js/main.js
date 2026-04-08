@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Simple flash message auto-dismissal
     const alerts = document.querySelectorAll('.alert-dismissible');
     alerts.forEach(alert => {
+        // Clear cart if order was successful
+        if (alert.classList.contains('alert-success') && alert.textContent.includes('Order placed successfully')) {
+            localStorage.removeItem('cart');
+            updateCartCount();
+        }
+
         setTimeout(() => {
             const closeBtn = alert.querySelector('.btn-close');
             if (closeBtn) {

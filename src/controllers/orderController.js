@@ -9,6 +9,38 @@ import Coupon from '../models/Coupon.js';
 import { validationResult } from 'express-validator';
 
 export default {
+  // GET Admin Orders (for EJS view)
+  getAdminOrders: async (req, res) => {
+    try {
+      const orders = await Order.findAll({ limit: 100 });
+      
+      // Map names for the view
+      const mappedOrders = orders.map(order => ({
+        ...order,
+        customer_name: `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'Guest',
+        customer_email: order.email
+      }));
+
+      res.render('admin/orders/list', {
+        title: 'Order Management',
+        orders: mappedOrders,
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'orders'
+      });
+    } catch (error) {
+      console.error('Error loading admin orders:', error);
+      req.flash('error_msg', 'Error loading orders');
+      res.render('admin/orders/list', {
+        title: 'Order Management',
+        orders: [],
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'orders'
+      });
+    }
+  },
+
   // Create new order
   createOrder: async (req, res) => {
     try {

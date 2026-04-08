@@ -4,7 +4,7 @@
         <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
             <h4 class="fw-bold mb-5">Billing Details</h4>
             
-            <form action="/orders" method="POST">
+            <form action="/checkout" method="POST">
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <label for="firstName" class="form-label fw-semibold">First Name</label>
@@ -88,7 +88,11 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div class="d-flex align-items-center">
                                 <div class="bg-light rounded-3 overflow-hidden me-3" style="width: 50px; height: 50px;">
-                                    <div class="placeholder-img h-100 small"><i class="fas fa-image"></i></div>
+                                    <% if (item.image) { %>
+                                        <img src="<%= item.image %>" alt="<%= item.name %>" class="w-100 h-100 object-fit-cover">
+                                    <% } else { %>
+                                        <div class="placeholder-img h-100 small"><i class="fas fa-image"></i></div>
+                                    <% } %>
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-0"><%= item.name %></h6>
@@ -104,7 +108,7 @@
             <div class="p-4 bg-light rounded-4">
                 <div class="d-flex justify-content-between mb-3 text-muted small">
                     <span>Subtotal</span>
-                    <span class="fw-bold text-dark">$0.00</span>
+                    <span class="fw-bold text-dark">$<%= typeof subtotal !== 'undefined' ? subtotal.toFixed(2) : '0.00' %></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3 text-muted small">
                     <span>Shipping</span>
@@ -113,7 +117,7 @@
                 <hr class="my-4 opacity-10">
                 <div class="d-flex justify-content-between align-items-end">
                     <span class="fw-bold h5 mb-0">Total</span>
-                    <span class="fw-bold h4 text-primary mb-0">$0.00</span>
+                    <span class="fw-bold h4 text-primary mb-0">$<%= typeof subtotal !== 'undefined' ? subtotal.toFixed(2) : '0.00' %></span>
                 </div>
             </div>
             

@@ -1,5 +1,6 @@
 import express from 'express';
 import adminController from '../controllers/adminController.js';
+import orderController from '../controllers/orderController.js';
 import upload from '../middleware/upload.js';
 const router = express.Router();
 
@@ -55,14 +56,7 @@ router.post('/categories/:id/update', adminController.updateCategory);
 router.post('/categories/:id/delete', adminController.deleteCategory);
 
 // Orders management
-router.get('/orders', (req, res) => {
-  res.render('admin/orders/list', {
-    title: 'Order Management',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'orders'
-  });
-});
+router.get('/orders', orderController.getAdminOrders);
 
 router.get('/orders/:id', (req, res) => {
   res.render('admin/orders/detail', {
