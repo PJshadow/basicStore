@@ -62,22 +62,31 @@ router.get('/orders/:id', orderController.getAdminOrderDetail);
 
 // Customers management
 router.get('/customers', (req, res) => {
-  res.render('admin/customers/list', {
-    title: 'Customer Management',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'customers'
+  // Use the controller's logic
+  import('../controllers/customerController.js').then(controller => {
+    controller.default.getAllCustomers(req, res);
   });
 });
 
-router.get('/customers/:id', (req, res) => {
-  res.render('admin/customers/detail', {
-    title: 'Customer Details',
+router.get('/customers/:id/edit', async (req, res) => {
+  const { id } = req.params;
+  const Customer = (await import('../models/Customer.js')).default;
+  const customer = await Customer.findById(id);
+  res.render('admin/customers/edit', {
+    title: 'Edit Customer',
     currentUser: req.session.user,
     sidebar: true,
     activePage: 'customers',
-    customerId: req.params.id
+    customer
   });
+});
+
+router.post('/customers/:id/update', async (req, res) => {
+  const { id } = req.params;
+  const Customer = (await import('../models/Customer.js')).default;
+  await Customer.update(id, req.body);
+  req.flash('success_msg', 'Customer updated successfully');
+  res.redirect('/admin/customers');
 });
 
 // Coupons management

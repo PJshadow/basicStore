@@ -36,7 +36,7 @@
                                 </td>
                                 <td class="py-3 text-muted small"><%= new Date(customer.created_at).toLocaleDateString() %></td>
                                 <td class="px-4 py-3 text-end">
-                                    <a href="/admin/customers/<%= customer.id %>" class="btn btn-sm btn-light border rounded-pill"><i class="fas fa-user-gear text-primary"></i></a>
+                                    <a href="/admin/customers/<%= customer.id %>/edit" class="btn btn-sm btn-light border rounded-pill"><i class="fas fa-edit text-primary"></i></a>
                                 </td>
                             </tr>
                         <% }) %>

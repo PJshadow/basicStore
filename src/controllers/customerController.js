@@ -38,7 +38,7 @@ export default {
   getAllCustomers: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -57,7 +57,11 @@ export default {
       const totalCustomers = await Customer.count(search);
       const totalPages = Math.ceil(totalCustomers / parseInt(limit));
 
-      res.status(200).json({
+      res.render('admin/customers/list', {
+        title: 'Customer Management',
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'customers',
         customers,
         pagination: {
           currentPage: parseInt(page),
@@ -70,7 +74,8 @@ export default {
       });
     } catch (error) {
       console.error('Get all customers error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      req.flash('error_msg', 'Internal server error');
+      res.redirect('/admin');
     }
   },
 
@@ -152,7 +157,7 @@ export default {
   deleteCustomer: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
@@ -226,7 +231,7 @@ export default {
   searchCustomers: async (req, res) => {
     try {
       // Check admin authentication
-      if (!req.session.userRole || req.session.userRole !== 'admin') {
+      if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 

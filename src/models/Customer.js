@@ -111,8 +111,7 @@ const createCustomerModel = () => {
       params = [`%${search}%`, `%${search}%`, `%${search}%`];
     }
     
-    sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    sql += ' ORDER BY created_at DESC LIMIT ' + parseInt(offset) + ', ' + parseInt(limit);
     
     try {
       const [rows] = await promisePool.execute(sql, params);
