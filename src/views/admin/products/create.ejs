@@ -21,6 +21,19 @@
                 </div>
                 
                 <div class="mb-4">
+                    <label class="form-label fw-bold">SKU (Stock Keeping Unit)</label>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="useCustomSku" name="useCustomSku" onchange="toggleSkuField()">
+                        <label class="form-check-label fw-bold" for="useCustomSku">Use custom SKU</label>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-barcode small"></i></span>
+                        <input type="text" class="form-control bg-light border-0 py-2" id="sku" name="sku" placeholder="Auto-generated SKU" disabled>
+                    </div>
+                    <small class="text-muted">Leave custom SKU disabled to auto-generate SKU-{timestamp}</small>
+                </div>
+                
+                <div class="mb-4">
                     <label for="description" class="form-label fw-bold">Description</label>
                     <textarea class="form-control bg-light border-0" id="description" name="description" rows="5" placeholder="Enter product description"><%= typeof product !== 'undefined' ? product.description : '' %></textarea>
                 </div>
@@ -99,6 +112,21 @@
                         }
                         reader.readAsDataURL(file);
                     });
+                }
+            }
+            
+            function toggleSkuField() {
+                const useCustomSku = document.getElementById('useCustomSku');
+                const skuInput = document.getElementById('sku');
+                
+                if (useCustomSku.checked) {
+                    skuInput.disabled = false;
+                    skuInput.placeholder = "Enter custom SKU";
+                    skuInput.value = "";
+                } else {
+                    skuInput.disabled = true;
+                    skuInput.placeholder = "Auto-generated SKU";
+                    skuInput.value = "";
                 }
             }
         </script>

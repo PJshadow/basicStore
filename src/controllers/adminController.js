@@ -385,12 +385,17 @@ export default {
 
       const mainImage = imageUrls.length > 0 ? imageUrls[0] : '/images/placeholder.webp';
 
+      // Determine SKU: use custom if provided, otherwise auto-generate
+      const useCustomSku = req.body.useCustomSku === 'on';
+      const customSku = req.body.sku ? req.body.sku.trim() : '';
+      const finalSku = useCustomSku && customSku ? customSku : 'SKU-' + Date.now();
+
       const productData = {
         name,
         slug: productSlug,
         description,
         short_description: description ? description.substring(0, 150) : '',
-        sku: 'SKU-' + Date.now(), // Basic SKU generation
+        sku: finalSku,
         price: parseFloat(price),
         stock_quantity: parseInt(stock_quantity),
         category_id: parseInt(category_id),
@@ -492,12 +497,18 @@ export default {
 
       const mainImageObj = existingImages.find(img => img.is_main) || { image_url: imageUrls[0] || '/images/placeholder.webp' };
 
+      // Handle SKU update: use custom if provided, otherwise keep existing
+      const useCustomSku = req.body.useCustomSku === 'on';
+      const customSku = req.body.sku ? req.body.sku.trim() : '';
+      const finalSku = useCustomSku && customSku ? customSku : existingProduct.sku;
+
       const productData = {
         ...existingProduct,
         name,
         slug,
         description,
         short_description: description ? description.substring(0, 150) : '',
+        sku: finalSku,
         price: parseFloat(price),
         stock_quantity: parseInt(stock_quantity),
         category_id: parseInt(category_id),
