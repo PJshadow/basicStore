@@ -41,6 +41,35 @@ export default {
     }
   },
 
+  // GET Admin Order Detail (for EJS view)
+  getAdminOrderDetail: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const order = await Order.findById(id);
+
+      if (!order) {
+        req.flash('error_msg', 'Order not found');
+        return res.redirect('/admin/orders');
+      }
+
+      // Get items for this order
+      const items = await Order.getItems(id);
+      order.items = items;
+
+      res.render('admin/orders/detail', {
+        title: `Order Details #${order.order_number}`,
+        order,
+        currentUser: req.session.user,
+        sidebar: true,
+        activePage: 'orders'
+      });
+    } catch (error) {
+      console.error('Error loading admin order detail:', error);
+      req.flash('error_msg', 'Error loading order details');
+      res.redirect('/admin/orders');
+    }
+  },
+
   // Create new order
   createOrder: async (req, res) => {
     try {

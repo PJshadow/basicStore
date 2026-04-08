@@ -58,15 +58,7 @@ router.post('/categories/:id/delete', adminController.deleteCategory);
 // Orders management
 router.get('/orders', orderController.getAdminOrders);
 
-router.get('/orders/:id', (req, res) => {
-  res.render('admin/orders/detail', {
-    title: 'Order Details',
-    currentUser: req.session.user,
-    sidebar: true,
-    activePage: 'orders',
-    orderId: req.params.id
-  });
-});
+router.get('/orders/:id', orderController.getAdminOrderDetail);
 
 // Customers management
 router.get('/customers', (req, res) => {
