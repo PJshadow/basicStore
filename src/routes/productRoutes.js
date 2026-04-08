@@ -41,7 +41,8 @@ router.get('/', async (req, res) => {
       minPrice: minPrice ? parseFloat(minPrice) : null,
       maxPrice: maxPrice ? parseFloat(maxPrice) : null,
       sortBy,
-      sortOrder
+      sortOrder,
+      inStockOnly: true
     };
 
     const products = await Product.findAll(filters);

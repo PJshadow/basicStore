@@ -289,6 +289,7 @@ const createProductModel = () => {
     sortBy = 'created_at',
     sortOrder = 'DESC',
     active = 1,
+    inStockOnly = false,
     includeImages = false
   } = {}) => {
     const offset = (page - 1) * limit;
@@ -304,6 +305,10 @@ const createProductModel = () => {
     if (active !== null) {
       sql += ' AND p.active = ?';
       params.push(active ? 1 : 0);
+    }
+
+    if (inStockOnly) {
+      sql += ' AND p.stock_quantity > 0';
     }
     
     if (categoryId) {
@@ -361,7 +366,8 @@ const createProductModel = () => {
     search = '',
     minPrice = null,
     maxPrice = null,
-    active = 1
+    active = 1,
+    inStockOnly = false
   } = {}) => {
     let sql = 'SELECT COUNT(*) as total FROM products WHERE 1=1';
     const params = [];
@@ -369,6 +375,10 @@ const createProductModel = () => {
     if (active !== null) {
       sql += ' AND active = ?';
       params.push(active ? 1 : 0);
+    }
+
+    if (inStockOnly) {
+      sql += ' AND stock_quantity > 0';
     }
     
     if (categoryId) {
@@ -437,7 +447,7 @@ const createProductModel = () => {
   const getFeatured = async (limit = 8) => {
     const sql = `
       SELECT * FROM products 
-      WHERE featured = TRUE AND active = TRUE
+      WHERE featured = TRUE AND active = TRUE AND stock_quantity > 0
       ORDER BY created_at DESC
       LIMIT ${parseInt(limit)}
     `;
@@ -454,7 +464,7 @@ const createProductModel = () => {
   const getRelated = async (productId, categoryId, limit = 4) => {
     const sql = `
       SELECT * FROM products 
-      WHERE category_id = ? AND id != ? AND active = TRUE
+      WHERE category_id = ? AND id != ? AND active = TRUE AND stock_quantity > 0
       ORDER BY RAND()
       LIMIT ${parseInt(limit)}
     `;

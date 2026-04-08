@@ -30,7 +30,8 @@ export default {
         minPrice: minPrice ? parseFloat(minPrice) : null,
         maxPrice: maxPrice ? parseFloat(maxPrice) : null,
         sortBy,
-        sortOrder
+        sortOrder,
+        inStockOnly: true
       };
 
       const products = await Product.findAll(filters);
@@ -271,7 +272,8 @@ export default {
         limit: parseInt(limit),
         categoryId: parseInt(categoryId),
         sortBy,
-        sortOrder
+        sortOrder,
+        inStockOnly: true
       };
 
       const products = await Product.findAll(filters);
