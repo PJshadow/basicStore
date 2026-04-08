@@ -250,5 +250,126 @@ export default {
       console.error('Search customers error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
+  },
+
+  // Render customer profile
+  getProfile: async (req, res) => {
+    try {
+      const email = req.session.user.email;
+      let customer = await Customer.findByEmail(email);
+
+      if (!customer) {
+        // Create customer if it doesn't exist but user does
+        customer = await Customer.create({
+          first_name: req.session.user.username,
+          last_name: '',
+          email: email
+        });
+      }
+
+      res.render('customer/profile', {
+        title: 'My Profile',
+        customer,
+        activePage: 'profile'
+      });
+    } catch (error) {
+      console.error('Get profile error:', error);
+      req.flash('error_msg', 'Could not load profile');
+      res.redirect('/');
+    }
+  },
+
+  // Update customer profile
+  updateProfile: async (req, res) => {
+    try {
+      const email = req.session.user.email;
+      const customer = await Customer.findByEmail(email);
+      
+      if (!customer) {
+        req.flash('error_msg', 'Customer not found');
+        return res.redirect('/profile');
+      }
+
+      const { first_name, last_name, phone, address, city, country } = req.body;
+      
+      await Customer.update(customer.id, {
+        first_name,
+        last_name,
+        email: customer.email, // email is fixed
+        phone,
+        address,
+        city,
+        country,
+        state: customer.state,
+        zip_code: customer.zip_code
+      });
+
+      req.flash('success_msg', 'Profile updated successfully');
+      res.redirect('/profile');
+    } catch (error) {
+      console.error('Update profile error:', error);
+      req.flash('error_msg', 'Could not update profile');
+      res.redirect('/profile');
+    }
+  },
+
+  // Render customer orders
+  getOrders: async (req, res) => {
+    try {
+      const email = req.session.user.email;
+      const customer = await Customer.findByEmail(email);
+
+      let orders = [];
+      if (customer) {
+        orders = await Customer.getOrders(customer.id);
+      }
+
+      res.render('customer/orders', {
+        title: 'My Orders',
+        orders,
+        activePage: 'orders'
+      });
+    } catch (error) {
+      console.error('Get orders error:', error);
+      req.flash('error_msg', 'Could not load orders');
+      res.redirect('/');
+    }
+  },
+
+  // Render order details
+  getOrderDetail: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const email = req.session.user.email;
+      const customer = await Customer.findByEmail(email);
+
+      if (!customer) {
+        req.flash('error_msg', 'Customer record not found');
+        return res.redirect('/orders');
+      }
+
+      const order = await Order.getWithItems(id);
+
+      if (!order) {
+        req.flash('error_msg', 'Order not found');
+        return res.redirect('/orders');
+      }
+
+      // Ensure this order belongs to the current customer
+      if (order.customer_id !== customer.id) {
+        req.flash('error_msg', 'Unauthorized to view this order');
+        return res.redirect('/orders');
+      }
+
+      res.render('customer/order-detail', {
+        title: `Order #${order.order_number}`,
+        order,
+        activePage: 'orders'
+      });
+    } catch (error) {
+      console.error('Get order detail error:', error);
+      req.flash('error_msg', 'Could not load order details');
+      res.redirect('/orders');
+    }
   }
 };

@@ -315,6 +315,18 @@ const createOrderModel = () => {
     }
   };
 
+  // Get order with all items
+  const getWithItems = async (id) => {
+    try {
+      const order = await findById(id);
+      if (!order) return null;
+      const items = await getItems(id);
+      return { ...order, items };
+    } catch (error) {
+      throw new Error(`Error getting order with items: ${error.message}`);
+    }
+  };
+
   // Get order statistics
   const getStatistics = async (period = 'month', startDate = null, endDate = null) => {
     let dateFormat, interval;
@@ -433,6 +445,7 @@ const createOrderModel = () => {
     findAll,
     count,
     getItems,
+    getWithItems,
     getStatistics,
     getRevenueByPeriod
   };

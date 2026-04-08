@@ -1,0 +1,24 @@
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-primary text-white py-3 border-0 text-center">
+        <div class="mb-2">
+            <div class="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+        <h6 class="fw-bold mb-0"><%= currentUser.username %></h6>
+        <p class="small mb-0 opacity-75"><%= currentUser.email %></p>
+    </div>
+    <div class="list-group list-group-flush border-0">
+        <a href="/profile" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'profile') ? 'bg-light fw-bold text-primary' : '' %>">
+            <i class="fas fa-user-circle me-2 opacity-75"></i> Personal Info
+        </a>
+        <a href="/orders" class="list-group-item list-group-item-action py-3 border-0 <%= (typeof activePage !== 'undefined' && activePage === 'orders') ? 'bg-light fw-bold text-primary' : '' %>">
+            <i class="fas fa-box me-2 opacity-75"></i> My Orders
+        </a>
+        <form action="/auth/logout" method="POST" class="d-grid">
+            <button type="submit" class="list-group-item list-group-item-action py-3 border-0 text-danger">
+                <i class="fas fa-sign-out-alt me-2 opacity-75"></i> Logout
+            </button>
+        </form>
+    </div>
+</div>

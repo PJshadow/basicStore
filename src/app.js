@@ -26,6 +26,7 @@ import indexRoutes from './routes/index.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
 
 // Initialize Express app
 const app = express();
@@ -105,6 +106,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/', indexRoutes);
+app.use('/', customerRoutes);
 app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 app.use('/admin', adminRoutes);
