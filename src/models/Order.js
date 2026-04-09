@@ -133,6 +133,27 @@ const createOrderModel = () => {
     }
   };
 
+  // Helper to adjust stock based on status changes
+  const adjustStockForStatusChange = async (connection, orderId, oldStatus, newStatus) => {
+    const stockReducedStatuses = ['pending', 'processing', 'shipped', 'delivered'];
+    const wasReduced = stockReducedStatuses.includes(oldStatus);
+    const isReduced = stockReducedStatuses.includes(newStatus);
+
+    if (wasReduced && !isReduced) {
+      // Return stock (e.g., pending -> cancelled)
+      const [items] = await connection.execute('SELECT product_id, quantity FROM order_items WHERE order_id = ?', [orderId]);
+      for (const item of items) {
+        await connection.execute('UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?', [item.quantity, item.product_id]);
+      }
+    } else if (!wasReduced && isReduced) {
+      // Reduce stock again (e.g., cancelled -> pending)
+      const [items] = await connection.execute('SELECT product_id, quantity FROM order_items WHERE order_id = ?', [orderId]);
+      for (const item of items) {
+        await connection.execute('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', [item.quantity, item.product_id]);
+      }
+    }
+  };
+
   // Update order status
   const updateStatus = async (id, status) => {
     const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
@@ -146,7 +167,7 @@ const createOrderModel = () => {
     try {
       await connection.beginTransaction();
 
-      // Get current status and items if we are cancelling
+      // Get current status
       const [currentOrder] = await connection.execute('SELECT status FROM orders WHERE id = ?', [id]);
       if (!currentOrder[0]) {
         throw new Error('Order not found');
@@ -154,22 +175,13 @@ const createOrderModel = () => {
 
       const oldStatus = currentOrder[0].status;
 
-      // Update the status
-      const updateSql = 'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
-      await connection.execute(updateSql, [status, id]);
+      if (oldStatus !== status) {
+        // Update the status
+        const updateSql = 'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+        await connection.execute(updateSql, [status, id]);
 
-      // If moving TO cancelled OR refunded FROM a status that had stock reduced (pending, processing, shipped, delivered)
-      // and it's not already cancelled/refunded
-      if ((status === 'cancelled' || status === 'refunded') && 
-          (oldStatus !== 'cancelled' && oldStatus !== 'refunded')) {
-        
-        // Get order items to return stock
-        const [items] = await connection.execute('SELECT product_id, quantity FROM order_items WHERE order_id = ?', [id]);
-        
-        for (const item of items) {
-          const updateStockSql = 'UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?';
-          await connection.execute(updateStockSql, [item.quantity, item.product_id]);
-        }
+        // Adjust stock based on status change
+        await adjustStockForStatusChange(connection, id, oldStatus, status);
       }
 
       await connection.commit();
@@ -231,22 +243,43 @@ const createOrderModel = () => {
       notes
     } = orderData;
     
-    const sql = `
-      UPDATE orders 
-      SET customer_id = ?, status = ?, subtotal = ?, discount_amount = ?, tax_amount = ?, shipping_amount = ?,
-          total_amount = ?, payment_method = ?, shipping_address = ?, billing_address = ?,
-          notes = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `;
+    const connection = await promisePool.getConnection();
     
     try {
-      const [result] = await promisePool.execute(sql, [
+      await connection.beginTransaction();
+
+      // Get current status to check for changes
+      const [currentOrder] = await connection.execute('SELECT status FROM orders WHERE id = ?', [id]);
+      if (!currentOrder[0]) {
+        throw new Error('Order not found');
+      }
+      const oldStatus = currentOrder[0].status;
+
+      const sql = `
+        UPDATE orders 
+        SET customer_id = ?, status = ?, subtotal = ?, discount_amount = ?, tax_amount = ?, shipping_amount = ?,
+            total_amount = ?, payment_method = ?, shipping_address = ?, billing_address = ?,
+            notes = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `;
+      
+      const [result] = await connection.execute(sql, [
         customer_id, status, subtotal, orderData.discount_amount || 0, tax_amount, shipping_amount,
         total_amount, payment_method, shipping_address, billing_address, notes, id
       ]);
+
+      // If status changed, adjust stock
+      if (status && status !== oldStatus) {
+        await adjustStockForStatusChange(connection, id, oldStatus, status);
+      }
+
+      await connection.commit();
       return result.affectedRows > 0;
     } catch (error) {
+      await connection.rollback();
       throw new Error(`Error updating order: ${error.message}`);
+    } finally {
+      connection.release();
     }
   };
 
