@@ -141,13 +141,78 @@ const createOrderModel = () => {
       throw new Error(`Invalid status: ${status}`);
     }
     
-    const sql = 'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+    const connection = await promisePool.getConnection();
     
     try {
-      const [result] = await promisePool.execute(sql, [status, id]);
-      return result.affectedRows > 0;
+      await connection.beginTransaction();
+
+      // Get current status and items if we are cancelling
+      const [currentOrder] = await connection.execute('SELECT status FROM orders WHERE id = ?', [id]);
+      if (!currentOrder[0]) {
+        throw new Error('Order not found');
+      }
+
+      const oldStatus = currentOrder[0].status;
+
+      // Update the status
+      const updateSql = 'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+      await connection.execute(updateSql, [status, id]);
+
+      // If moving TO cancelled OR refunded FROM a status that had stock reduced (pending, processing, shipped, delivered)
+      // and it's not already cancelled/refunded
+      if ((status === 'cancelled' || status === 'refunded') && 
+          (oldStatus !== 'cancelled' && oldStatus !== 'refunded')) {
+        
+        // Get order items to return stock
+        const [items] = await connection.execute('SELECT product_id, quantity FROM order_items WHERE order_id = ?', [id]);
+        
+        for (const item of items) {
+          const updateStockSql = 'UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?';
+          await connection.execute(updateStockSql, [item.quantity, item.product_id]);
+        }
+      }
+
+      await connection.commit();
+      return true;
     } catch (error) {
+      await connection.rollback();
       throw new Error(`Error updating order status: ${error.message}`);
+    } finally {
+      connection.release();
+    }
+  };
+
+  // Cancel expired pending orders (e.g., older than 30 minutes)
+  const cancelExpiredPendingOrders = async (minutesThreshold = 30) => {
+    const sql = `
+      SELECT id FROM orders 
+      WHERE status = 'pending' 
+      AND created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)
+    `;
+    
+    try {
+      const [expiredOrders] = await promisePool.execute(sql, [minutesThreshold]);
+      
+      const results = {
+        processed: 0,
+        success: 0,
+        failed: 0
+      };
+
+      for (const order of expiredOrders) {
+        results.processed++;
+        try {
+          await updateStatus(order.id, 'cancelled');
+          results.success++;
+        } catch (error) {
+          console.error(`Failed to auto-cancel order ${order.id}:`, error.message);
+          results.failed++;
+        }
+      }
+      
+      return results;
+    } catch (error) {
+      throw new Error(`Error cancelling expired orders: ${error.message}`);
     }
   };
 
@@ -456,7 +521,8 @@ const createOrderModel = () => {
     getItems,
     getWithItems,
     getStatistics,
-    getRevenueByPeriod
+    getRevenueByPeriod,
+    cancelExpiredPendingOrders
   };
 };
 

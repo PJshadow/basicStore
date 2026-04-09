@@ -161,8 +161,21 @@ The platform includes an automated system to ensure all product images are serve
 - **Global Link Sync**: Automatically updates all links to the new `.webp` format in:
   - **Database**: Scans every column of every table to replace old paths.
   - **Source Code**: Updates paths in `.ejs`, `.css`, `.js`, and `.html` files.
-- **Configuration**: Controlled by `WEBP_CONVERSION_INTERVAL` in the `.env` file (milliseconds).
+- **Configuration**: Controlled by `WEBP_CONVERSION_INTERVAL` in the `.env` file (milliseconds, default: 300000 / 5 minutes).
 - **Cleanup**: Removes original files after successful conversion to save disk space.
+
+## 📦 Stock Management & Reservation
+
+The platform implements a smart stock reservation system to prevent inventory leakage from abandoned checkouts.
+
+- **Immediate Reservation**: Stock is reduced the moment an order is created with a `pending` status.
+- **Automated Stock Release**:
+  - A background cron job runs every 15 minutes to identify abandoned orders.
+  - Orders that remain in `pending` status for longer than the configured threshold are automatically moved to `cancelled`.
+  - Upon cancellation (manual or automatic), the system automatically returns the reserved stock to the products.
+- **Configuration**:
+  - `ORDER_EXPIRATION_MINUTES`: Set this in your `.env` file to control the abandonment threshold (default: 30 minutes).
+- **Manual Control**: Admins can manually cancel or refund orders through the dashboard, which also triggers the automatic stock return logic.
 
 ## 🤝 Contributing
 

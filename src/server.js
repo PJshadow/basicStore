@@ -1,5 +1,6 @@
 import app from './app.js';
 import { startWebpConversionTask } from './utils/webpConverter.js';
+import initCronJobs from './utils/cronJobs.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -16,6 +17,9 @@ const server = app.listen(PORT, () => {
   
   // Start the background task for WebP conversion
   startWebpConversionTask();
+
+  // Initialize cron jobs
+  initCronJobs();
 });
 
 // Handle unhandled promise rejections

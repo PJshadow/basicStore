@@ -19,8 +19,32 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
+// Sidebar stats middleware to make "Quick Stats" dynamic
+const getSidebarStats = async (req, res, next) => {
+  if (req.session.user && req.session.user.role === 'admin') {
+    try {
+      const Order = (await import('../models/Order.js')).default;
+      const [todayStats, allTimeStats] = await Promise.all([
+        Order.getStatistics('day'),
+        Order.getStatistics(null)
+      ]);
+      
+      res.locals.quickStats = {
+        todayOrders: todayStats.total_orders || 0,
+        pendingOrders: allTimeStats.pending_orders || 0,
+        todayRevenue: todayStats.total_revenue || 0
+      };
+    } catch (error) {
+      console.error('Error fetching sidebar stats:', error);
+      res.locals.quickStats = { todayOrders: 0, pendingOrders: 0, todayRevenue: 0 };
+    }
+  }
+  next();
+};
+
 // Apply admin middleware to all admin routes
 router.use(isAdmin);
+router.use(getSidebarStats);
 
 // Admin dashboard
 router.get('/', adminController.getDashboard);
