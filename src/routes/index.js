@@ -1,9 +1,11 @@
 import express from 'express';
+import crypto from 'crypto';
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
 import Customer from '../models/Customer.js';
 import emailService from '../utils/emailService.js';
+import { checkoutLimiter, couponLimiter, contactLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -84,6 +86,10 @@ router.get('/checkout', async (req, res) => {
     discountAmount = appliedCoupon.discountAmount;
   }
 
+  // Generate idempotency key for checkout
+  const idempotencyKey = crypto.randomUUID();
+  req.session.checkoutIdempotencyKey = idempotencyKey;
+
   res.render('home/checkout', {
     title: 'Checkout',
     currentUser: req.session.user || null,
@@ -91,12 +97,13 @@ router.get('/checkout', async (req, res) => {
     cartItems,
     subtotal,
     appliedCoupon,
-    discountAmount
+    discountAmount,
+    idempotencyKey
   });
 });
 
 // Apply coupon
-router.post('/checkout/apply-coupon', async (req, res) => {
+router.post('/checkout/apply-coupon', couponLimiter, async (req, res) => {
   try {
     const { couponCode } = req.body;
     const cartItems = req.session.cart || [];
@@ -141,13 +148,23 @@ router.post('/checkout/remove-coupon', (req, res) => {
 });
 
 // Process checkout
-router.post('/checkout', async (req, res) => {
+router.post('/checkout', checkoutLimiter, async (req, res) => {
   try {
     const {
       first_name, last_name, email, phone,
       address, address2, city, state, zip_code,
-      paymentMethod
+      paymentMethod, idempotencyKey
     } = req.body;
+
+    // Idempotency check
+    if (!idempotencyKey || idempotencyKey !== req.session.checkoutIdempotencyKey) {
+      console.warn('Idempotency key mismatch or reuse attempt');
+      req.flash('error_msg', 'This order has already been processed or your session has expired. Please refresh the page.');
+      return res.redirect('/checkout');
+    }
+
+    // Clear key immediately to prevent double submission
+    delete req.session.checkoutIdempotencyKey;
 
     const cartItems = req.session.cart || [];
 

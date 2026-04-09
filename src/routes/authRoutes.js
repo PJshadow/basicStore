@@ -1,5 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
+import { authLimiter } from '../middleware/rateLimiter.js';
 const router = express.Router();
 
 // Login page
@@ -15,6 +16,7 @@ router.get('/login', (req, res) => {
 
 // Login process
 router.post('/login',
+  authLimiter,
   [
     body('email').isEmail().normalizeEmail(),
     body('password').notEmpty()
@@ -77,6 +79,7 @@ router.get('/register', (req, res) => {
 
 // Register process
 router.post('/register',
+  authLimiter,
   [
     body('username').notEmpty().trim().escape(),
     body('email').isEmail().normalizeEmail(),

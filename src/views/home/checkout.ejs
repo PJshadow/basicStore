@@ -5,6 +5,7 @@
             <h4 class="fw-bold mb-5">Billing Details</h4>
             
             <form action="/checkout" method="POST">
+                <input type="hidden" name="idempotencyKey" value="<%= idempotencyKey %>">
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <label for="firstName" class="form-label fw-semibold">First Name</label>
