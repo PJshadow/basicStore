@@ -7,9 +7,9 @@ import { isAuthenticated } from '../middleware/auth.js';
 router.post('/checkout', isAuthenticated, paymentController.createCheckout);
 
 // Return URLs for Checkout Pro
-router.get('/success', isAuthenticated, paymentController.paymentSuccess);
-router.get('/failure', isAuthenticated, paymentController.paymentFailure);
-router.get('/pending', isAuthenticated, paymentController.paymentPending);
+router.get('/success', paymentController.paymentSuccess);
+router.get('/failure', paymentController.paymentFailure);
+router.get('/pending', paymentController.paymentPending);
 
 // Webhook (No auth required, the provider calls this)
 router.post('/webhook/:provider', paymentController.handleWebhook);
