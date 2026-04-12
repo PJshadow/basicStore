@@ -109,39 +109,6 @@ npm test
 npm run test:watch
 ```
 
-## 📈 Roadmap
-
-### Phase 1: Foundation Setup (Completed)
-- [x] Project initialization and dependency setup
-- [x] Express server configuration
-- [x] Database connection and models
-- [x] Basic authentication system
-- [x] EJS template structure
-
-### Phase 2: Core E-commerce Features
-- [ ] Product management (CRUD operations)
-- [ ] Shopping cart functionality
-- [ ] Checkout process
-- [ ] Order processing
-
-### Phase 3: Admin Dashboard
-- [ ] Admin interface completion
-- [ ] Product management interface
-- [ ] Order management interface
-- [ ] Customer management
-
-### Phase 4: Advanced Features
-- [ ] Email notifications
-- [ ] Coupon system
-- [ ] Inventory management
-- [ ] Payment gateway integration
-
-### Phase 5: Polish & Deployment
-- [ ] UI/UX improvements
-- [ ] Performance optimization
-- [ ] Security hardening
-- [ ] Deployment preparation
-
 ## 🔒 Security Features
 
 - Password hashing with bcrypt
@@ -177,6 +144,29 @@ The platform implements a smart stock reservation system to prevent inventory le
   - `ORDER_EXPIRATION_MINUTES`: Set this in your `.env` file to control the abandonment threshold (default: 30 minutes).
 - **Manual Control**: Admins can manually cancel or refund orders through the dashboard, which also triggers the automatic stock return logic.
 
+## 💳 Payment Integration
+
+The platform features a modular, "plugin-like" payment system that allows for easy integration of multiple payment gateways. Currently, **Mercado Pago** is fully integrated.
+
+### How it Works (Provider Pattern)
+
+The system uses a **Provider Architecture** to decouple business logic from specific gateway APIs:
+
+1.  **PaymentService (`src/services/payment/PaymentService.js`)**: Acts as a manager. It detects the active provider via the `PAYMENT_PROVIDER` environment variable and delegates all calls to it.
+2.  **Providers (`src/services/payment/MercadoPagoProvider.js`)**: Individual files containing the specific logic for each gateway (Mercado Pago, Stripe, etc.). Each provider must implement a standard interface (`createCheckout`, `handleWebhook`).
+3.  **Webhook Flow**:
+    *   The gateway sends a POST request to `/payment/webhook/:provider`.
+    *   The **PaymentController** receives it and passes it to the `PaymentService`.
+    *   The service identifies the provider and processes the notification.
+    *   The order status is automatically updated in the database.
+
+### Key Integration Files
+
+- `src/routes/paymentRoutes.js`: Defines checkout and webhook endpoints.
+- `src/controllers/paymentController.js`: Manages the flow between the request and the service.
+- `src/services/payment/`: Contains the core logic and provider implementations.
+- `.env`: Configures `MP_ACCESS_TOKEN`, `WEBHOOK_URL`, and `PAYMENT_PROVIDER`.
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -191,7 +181,7 @@ This project is licensed under the ISC License.
 
 ## 👥 Authors
 
-- **Roo** - *Initial architecture and implementation*
+- Pierre Junior
 
 ## 🙏 Acknowledgments
 
@@ -199,7 +189,3 @@ This project is licensed under the ISC License.
 - Express.js team for the robust web framework
 - MySQL for reliable database storage
 - All open-source contributors whose packages made this possible
-
----
-
-**Note**: This is a foundational implementation. Full functionality will be implemented in subsequent phases according to the architecture plan in `plans/architecture-plan.md`.
