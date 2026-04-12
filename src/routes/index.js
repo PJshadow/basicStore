@@ -5,6 +5,7 @@ import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
 import Customer from '../models/Customer.js';
 import emailService from '../utils/emailService.js';
+import paymentService from '../services/payment/PaymentService.js';
 import { checkoutLimiter, couponLimiter, contactLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
@@ -265,12 +266,23 @@ router.post('/checkout', checkoutLimiter, async (req, res) => {
       );
     }
 
-    // Clear cart and coupon
-    req.session.cart = [];
-    delete req.session.appliedCoupon;
+    // 4. INTEGRATION: Create Payment Session
+    try {
+      const checkoutData = await paymentService.createCheckout(newOrder, items, customer);
+      
+      // Clear cart and coupon AFTER successful payment session creation
+      req.session.cart = [];
+      delete req.session.appliedCoupon;
 
-    req.flash('success_msg', `Order placed successfully! Your order number is ${newOrder.order_number}`);
-    res.redirect('/');
+      // Redirect to Gateway (Checkout Pro)
+      return res.redirect(checkoutData.init_point);
+    } catch (paymentError) {
+      console.error('Payment session creation failed:', paymentError);
+      // Even if payment session fails, order is created. 
+      // We could redirect to a "pay later" page or error page.
+      req.flash('error_msg', 'Order saved, but we could not initiate payment. Please contact support.');
+      res.redirect('/');
+    }
   } catch (error) {
     console.error('Checkout error:', error);
     req.flash('error_msg', 'There was an error processing your order. Please try again.');

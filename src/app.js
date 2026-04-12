@@ -1,7 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 import session from 'express-session';
 import flash from 'connect-flash';
 import helmet from 'helmet';
@@ -9,9 +9,6 @@ import compression from 'compression';
 import morgan from 'morgan';
 import methodOverride from 'method-override';
 import expressLayouts from 'express-ejs-layouts';
-
-// Load environment variables
-dotenv.config();
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -27,9 +24,13 @@ import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 // Initialize Express app
 const app = express();
+
+// Trust proxy for ngrok/proxies (needed for express-rate-limit)
+app.set('trust proxy', 1);
 
 // Database connection test
 database.connect((err) => {
@@ -110,6 +111,7 @@ app.use('/', customerRoutes);
 app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 app.use('/admin', adminRoutes);
+app.use('/payment', paymentRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
